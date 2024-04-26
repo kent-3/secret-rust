@@ -33,7 +33,7 @@ pub async fn encrypt_msg<M: serde::Serialize>(
     account: &Account,
     enclave_public_key: &str,
 ) -> Result<(Nonce, Vec<u8>)> {
-    let code_hash = CodeHash::from_str(&code_hash)?;
+    let code_hash = CodeHash::from_str(code_hash)?;
 
     let enclave_key = crypto::clone_into_key(&hex::decode(enclave_public_key)?);
     let msg = serde_json::to_vec(msg).expect("msg cannot be serialized as JSON");

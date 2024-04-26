@@ -165,7 +165,7 @@ pub mod builder {
 
             let coin = Coin {
                 denom: "uscrt".parse().expect("safe: correct denom"),
-                amount: amount.into(),
+                amount,
             };
 
             self.kind.sent_funds.push(coin);
@@ -196,7 +196,7 @@ pub mod builder {
                 builder: None,
             };
 
-            let gas = fee.unwrap_or_else(|| super::gas::upload());
+            let gas = fee.unwrap_or_else(super::gas::upload);
 
             client.broadcast_msg(msg, &from, gas).await
         }
@@ -233,7 +233,7 @@ pub mod builder {
                 admin: None,
             };
 
-            let gas = fee.unwrap_or_else(|| super::gas::init());
+            let gas = fee.unwrap_or_else(super::gas::init);
 
             client
                 .broadcast_msg(msg, &from, gas)
@@ -270,7 +270,7 @@ pub mod builder {
 
             let decrypter = client.decrypter(&nonce, &from).await?;
 
-            let gas = fee.unwrap_or_else(|| super::gas::exec());
+            let gas = fee.unwrap_or_else(super::gas::exec);
 
             client
                 .broadcast_msg_raw(msg, &from, gas)
@@ -278,7 +278,7 @@ pub mod builder {
                 .map(|btr| btr.with_error_decrypt(decrypter))
                 .and_then(Result::from)
                 .and_then(|tx| tx.try_map(|cit| decrypter.decrypt(&cit)))
-                .and_then(|tx| tx.try_map(|plt| String::from_utf8(plt)))
+                .and_then(|tx| tx.try_map(String::from_utf8))
                 .and_then(|tx| tx.try_map(|b64| BASE64_STANDARD.decode(b64)))
                 .and_then(|tx| tx.try_map(|buf| serde_json::from_slice(&buf)))
         }
@@ -395,14 +395,14 @@ impl BroadcastTxResponse {
             BroadcastTxResponse::TxDeliverErrorEncrypted(log, ciphertext) => Err(with_decrypt
                 .map(|decrypter| decrypter.decrypt(&ciphertext))
                 .transpose()?
-                .map(|plaintext| String::from_utf8(plaintext))
+                .map(String::from_utf8)
                 .transpose()?
                 .map_or_else(|| Error::BroadcastTxDeliver(log), Error::BroadcastTxDeliver)),
             BroadcastTxResponse::Delivered(tx_res) => Ok(tx_res),
         }
     }
 
-    fn with_error_decrypt<'a>(self, decrypt: Decrypter) -> WithErrorDecryption {
+    fn with_error_decrypt(self, decrypt: Decrypter) -> WithErrorDecryption {
         WithErrorDecryption { decrypt, btr: self }
     }
 }
@@ -426,7 +426,7 @@ impl From<WithErrorDecryption> for Result<TxResponse<Vec<u8>>> {
 
 fn try_extract_encrypted_error(log: &str) -> Option<Vec<u8>> {
     log.split_once("encrypted:")
-        .and_then(|(_, rest)| rest.split_once(":"))
+        .and_then(|(_, rest)| rest.split_once(':'))
         .and_then(|(b64, _)| BASE64_STANDARD.decode(b64.trim()).ok())
 }
 

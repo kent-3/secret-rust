@@ -38,7 +38,7 @@ pub fn encrypt(
     let mut cipher = Siv::new(&SivKey::<Siv>::from(shared_secret));
 
     let ciphertext = cipher
-        .encrypt(&[[]], plaintext)
+        .encrypt([[]], plaintext)
         .map_err(|_| CryptoError::Encrypt)?;
 
     let ciphertext = [nonce.as_slice(), public.as_slice(), &ciphertext].concat();
@@ -52,12 +52,12 @@ pub fn decrypt(
     nonce: &Nonce,
     ciphertext: &[u8],
 ) -> Result<Vec<u8>, CryptoError> {
-    let shared_secret = encryption_key(secret, peer, &nonce)?;
+    let shared_secret = encryption_key(secret, peer, nonce)?;
 
     let mut cipher = Siv::new(&SivKey::<Siv>::from(shared_secret));
 
     let plaintext = cipher
-        .decrypt(&[[]], ciphertext)
+        .decrypt([[]], ciphertext)
         .map_err(|_| CryptoError::Decrypt)?;
 
     Ok(plaintext)

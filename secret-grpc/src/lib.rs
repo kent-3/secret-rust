@@ -65,3 +65,9 @@ impl SecretRPC {
         Client::init(&self.host, self.port, enclave_key, &self.chain_id)
     }
 }
+
+impl Default for SecretRPC {
+    fn default() -> Self {
+        Self::new()
+    }
+}

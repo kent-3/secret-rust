@@ -73,7 +73,7 @@ impl TryFrom<Vec<u8>> for ContractInit {
 
     fn try_from(value: Vec<u8>) -> Result<Self, Self::Error> {
         fn parse(value: &[u8]) -> Result<ContractInit, ParseContractInitError> {
-            let id = AccountId::new(crate::consts::CHAIN_PREFIX, &value)?;
+            let id = AccountId::new(crate::consts::CHAIN_PREFIX, value)?;
             Ok(ContractInit(id))
         }
         parse(&value).map_err(Self::Error::from)
@@ -190,7 +190,7 @@ impl<T> TxResponse<T> {
         crate::error::Error: From<E>,
         F: FnOnce(T) -> Result<U, E>,
     {
-        let response = self.response.map(|t| f(t)).transpose()?;
+        let response = self.response.map(f).transpose()?;
         Ok(TxResponse {
             response,
             gas_used: self.gas_used,

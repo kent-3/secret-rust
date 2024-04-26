@@ -55,7 +55,7 @@ impl super::Client {
             QuerySecretContractRequest, QuerySecretContractResponse,
         };
         let path = "/secret.compute.v1beta1.Query/QuerySecretContract";
-        let (nonce, encrypted) = self.encrypt_msg(msg, &contract.code_hash(), from).await?;
+        let (nonce, encrypted) = self.encrypt_msg(msg, contract.code_hash(), from).await?;
         let msg = QuerySecretContractRequest {
             contract_address: contract.id().to_string(),
             query: encrypted,

@@ -14,7 +14,7 @@ pub enum MalformedError {
 }
 
 // https://github.com/scrtlabs/SecretNetwork/blob/19bbd80307b4d6b49f04ad5c62008a3f25ba3f1e/cosmwasm/enclaves/execute/src/registration/cert.rs#L213
-fn extract_asn1_value<'a, 'b>(cert: &'a [u8], oid: &'b [u8]) -> Result<&'a [u8], MalformedError> {
+fn extract_asn1_value<'a>(cert: &'a [u8], oid: &[u8]) -> Result<&'a [u8], MalformedError> {
     let mut offset = cert
         .windows(oid.len())
         .position(|window| window == oid)
