@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Kent"]
 license = "Apache-2.0"
 repository = "https://github.com/kent-3/secret-rust/tree/main/secret-sdk-proto"
-description = "Protobuf stuct defintions for interacting with Secret"
+description = "Protobuf struct definitions for interacting with Secret"
 readme = "README.md"
 categories = ["cryptography", "cryptography::cryptocurrencies"]
 keywords = ["blockchain", "cosmos", "tendermint", "proto"]
@@ -26,3 +26,7 @@ getrandom = { version = "0.2.14", features = ["js"] }
 default = ["grpc-transport"]
 grpc = ["tonic", "cosmos-sdk-proto/grpc"]
 grpc-transport = ["grpc", "tonic/transport", "cosmos-sdk-proto/grpc-transport"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
