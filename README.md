@@ -1,6 +1,10 @@
+<div align="center">
+  <img src="banner.webp" />
+</div>
+
 # Secret Rust
 
-_Insert cool description here._
+An extension of [Cosmos Rust](https://github.com/cosmos/cosmos-rust) for [Secret](https://github.com/scrtlabs/SecretNetwork).
 
 ## Crates
 
@@ -20,8 +24,7 @@ _Insert cool description here._
 
 - [x] `proto-build` crate like cosmos-rust and tendermint-rs each have
 - [x] `secret-sdk-proto` crate that re-exports `cosmos-sdk-proto` and adds secret protobuf structs
-- [x] `secretrs` crate that re-exports `cosmrs` and adds secret type conversions
-  - [x] `secret-utils` provide encryption and decryption tools for use with any client
+- [x] `secretrs` crate that re-exports `cosmrs` and adds secret types, encryption tools
 - [ ] `secret-grpc` crate with full gRPC client implementation
 - [ ] `secret-grpc-gateway` crate with full gRPC-gateway (REST) client implementation
 

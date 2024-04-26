@@ -2,8 +2,7 @@ pub use cosmrs::*;
 pub use secret_sdk_proto::{self as proto, SECRET_VERSION};
 
 pub mod compute;
-
-pub use secret_utils as utils;
+pub mod utils;
 
 #[cfg(feature = "grpc-core")]
 pub use crate::tonic::{query_clients::*, service_clients::*};
