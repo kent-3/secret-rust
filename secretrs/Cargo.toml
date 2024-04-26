@@ -1,0 +1,44 @@
+[package]
+name = "secretrs"
+version = "0.0.1"
+authors = ["Kent"]
+license = "Apache-2.0"
+repository = "https://github.com/kent-3/secret-rust"
+description = ""
+readme = "README.md"
+categories = ["cryptography", "cryptography::cryptocurrencies"]
+keywords = ["blockchain", "cosmos"]
+edition = "2021"
+rust-version = "1.72"
+
+[dependencies]
+cosmrs = { version = "0.16.0", default-features = false }
+secret-sdk-proto = { version = "0.1.0", default-features = false, path = "../secret-sdk-proto" }
+secret-utils = { path = "../secret-utils" }
+
+[features]
+default = ["bip32"]
+bip32 = ["cosmrs/bip32"]
+rpc = ["cosmrs/rpc"]             # TODO - eliminate this
+getrandom = ["cosmrs/getrandom"]
+
+# `grpc-core` enables use of the tonic-generated gRPC client
+grpc-core = ["cosmrs/grpc-core", "secret-sdk-proto/grpc"]
+# `grpc` enables the 'transport' feature of tonic (not compatible with wasm)
+grpc = ["grpc-core", "cosmrs/grpc", "secret-sdk-proto/grpc-transport"]
+
+[dev-dependencies]
+color-eyre = "0.6"
+base64 = "0.22"
+hex = "0.4"
+regex = "1"
+serde = "1"
+serde_json = "1"
+
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
+tokio = { version = "1.37", features = ["rt", "sync", "macros"] }
+tonic-web-wasm-client = "0.5.1"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
+tokio = { version = "1.37", features = ["rt", "sync", "time", "macros"] }
+tonic = { version = "0.11.0", features = ["tls", "tls-webpki-roots", "transport"] }
