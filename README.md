@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="banner.webp" />
+</div>
+
 # Secret Rust
 
 _Insert cool description here._
