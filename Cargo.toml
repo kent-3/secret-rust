@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
-members = ["secret-sdk-proto", "secret-grpc", "secretrs", "secret-utils"]
-exclude = ["proto-build"]
+members = ["secret-sdk-proto", "secret-grpc", "secretrs"]
+exclude = ["proto-build", "secret-utils"]
 
 # This patch adds target_arch = "wasm32" configurations to the rpc clients
 [patch.crates-io]
