@@ -1,7 +1,11 @@
 [package]
 name = "secret-utils"
-version = "0.1.0"
+version = "0.0.0"
+authors = ["Kent"]
 license = "Unlicense"
+repository = "https://github.com/kent-3/secret-rust/tree/main/secret-utils"
+# description = ""
+readme = "README.md"
 edition = "2021"
 
 [dependencies]

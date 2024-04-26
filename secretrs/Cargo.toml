@@ -1,10 +1,10 @@
 [package]
 name = "secretrs"
-version = "0.0.1"
+version = "0.0.0"
 authors = ["Kent"]
 license = "Unlicense"
 repository = "https://github.com/kent-3/secret-rust/tree/main/secretrs"
-description = ""
+# description = ""
 readme = "README.md"
 categories = ["cryptography", "cryptography::cryptocurrencies"]
 keywords = ["blockchain", "cosmos"]
@@ -24,7 +24,7 @@ required-features = ["grpc"]
 [dependencies]
 cosmrs = { version = "0.16.0" }
 secret-sdk-proto = { version = "0.1.0", default-features = false, path = "../secret-sdk-proto" }
-secret-utils = { path = "../secret-utils" }
+secret-utils = { version = "0.0.0", path = "../secret-utils" }
 
 [features]
 default = ["bip32"]
@@ -52,3 +52,7 @@ tonic-web-wasm-client = "0.5.1"
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 tokio = { version = "1.37", features = ["rt", "sync", "time", "macros"] }
 tonic = { version = "0.11.0", features = ["tls", "tls-webpki-roots", "transport"] }
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
