@@ -2,7 +2,7 @@
 name = "secretrs"
 version = "0.0.1"
 authors = ["Kent"]
-license = "Apache-2.0"
+license = "Unlicense"
 repository = "https://github.com/kent-3/secret-rust/tree/main/secretrs"
 description = ""
 readme = "README.md"

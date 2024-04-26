@@ -2,6 +2,7 @@
 name = "secret-grpc"
 version = "0.1.0"
 authors = ["Kent"]
+license = "Unlicense"
 edition = "2021"
 publish = false
 
