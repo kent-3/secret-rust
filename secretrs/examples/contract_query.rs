@@ -2,12 +2,11 @@ use base64::prelude::{Engine, BASE64_STANDARD};
 use color_eyre::{owo_colors::OwoColorize, Result};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::str::FromStr;
 
 use secretrs::proto::secret::compute::v1beta1::{
     QueryByContractAddressRequest, QuerySecretContractRequest,
 };
-use secretrs::utils::{decrypter, encrypt_msg, CodeHash};
+use secretrs::utils::{decrypter, encrypt_msg};
 use secretrs::{ComputeQueryClient, RegistrationQueryClient};
 
 const GRPC_URL: &str = "http://grpc.testnet.secretsaturn.net:9090";

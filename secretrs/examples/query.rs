@@ -8,7 +8,7 @@ const TEST_ADDRESS: &str = "secret1ap26qrlp8mcq2pg6r47w43l0y8zkqm8a450s03";
 async fn async_main() -> Result<()> {
     // A single item page used throughout for brevity
     use proto::cosmos::base::query::v1beta1::PageRequest;
-    let one_page = Some(PageRequest {
+    let _one_page = Some(PageRequest {
         key: vec![],
         offset: 0,
         limit: 1,
