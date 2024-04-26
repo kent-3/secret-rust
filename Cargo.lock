@@ -1959,18 +1959,27 @@ dependencies = [
 name = "secretrs"
 version = "0.0.0"
 dependencies = [
+ "aes-siv",
+ "async-trait",
  "base64 0.22.0",
+ "bip32",
+ "bip39",
  "color-eyre",
  "cosmrs",
  "hex",
+ "hkdf",
+ "nanorand",
  "regex",
+ "secret-cosmwasm-std",
  "secret-sdk-proto",
- "secret-utils",
  "serde",
  "serde_json",
+ "sha2 0.10.8",
+ "thiserror",
  "tokio",
  "tonic",
  "tonic-web-wasm-client",
+ "x25519-dalek",
 ]
 
 [[package]]

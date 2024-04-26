@@ -46,7 +46,7 @@ async fn main() -> Result<()> {
 
     // Encryption Utils section
 
-    let account = secret_utils::Account::random();
+    let account = secretrs::utils::Account::random();
 
     let (nonce, encrypted) = encrypt_msg(&query, &code_hash, &account, &enclave_key).await?;
     let decrypter = decrypter(&nonce, &account, &enclave_key).await?;
@@ -84,9 +84,9 @@ async fn main() -> Result<()> {
                 let encrypted_bytes = BASE64_STANDARD.decode(&caps[1])?;
                 let decrypted_bytes = decrypter.decrypt(&encrypted_bytes)?;
                 let decrypted_string = String::from_utf8(decrypted_bytes)?;
-                Err(secret_utils::Error::Generic(decrypted_string))
+                Err(secretrs::utils::Error::Generic(decrypted_string))
             } else {
-                Err(secret_utils::Error::Generic(error_message.to_string()))
+                Err(secretrs::utils::Error::Generic(error_message.to_string()))
             }
         }
     }?;
