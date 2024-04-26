@@ -1,7 +1,7 @@
 use color_eyre::{eyre::Result, owo_colors::OwoColorize};
 use secret_grpc::TendermintClient;
 
-#[tokio::main]
+#[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<()> {
     color_eyre::install()?;
 

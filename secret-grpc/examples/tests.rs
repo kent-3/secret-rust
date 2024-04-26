@@ -5,7 +5,7 @@ use secret_grpc::client::SecretNetworkClient;
 
 use color_eyre::Result;
 
-#[tokio::main]
+#[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<()> {
     std::env::set_var("RUST_LOG", "info");
     color_eyre::install()?;

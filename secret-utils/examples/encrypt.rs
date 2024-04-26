@@ -11,7 +11,7 @@ pub enum QueryMsg {
     TokenInfo {},
 }
 
-#[tokio::main]
+#[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<()> {
     let query = QueryMsg::TokenInfo {};
     let account = secret_utils::Account::random();

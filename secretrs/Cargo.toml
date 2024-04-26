@@ -11,8 +11,18 @@ keywords = ["blockchain", "cosmos"]
 edition = "2021"
 rust-version = "1.72"
 
+[[example]]
+name = "query"
+path = "examples/query.rs"
+required-features = ["grpc"]
+
+[[example]]
+name = "contract_query"
+path = "examples/contract_query.rs"
+required-features = ["grpc"]
+
 [dependencies]
-cosmrs = { version = "0.16.0", default-features = false }
+cosmrs = { version = "0.16.0" }
 secret-sdk-proto = { version = "0.1.0", default-features = false, path = "../secret-sdk-proto" }
 secret-utils = { path = "../secret-utils" }
 

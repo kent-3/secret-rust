@@ -19,7 +19,7 @@ pub enum QueryAnswer {
     },
 }
 
-#[tokio::main]
+#[tokio::main(flavor = "current_thread")]
 async fn main() {
     let client = secret_grpc::SecretRPC::new()
         .host("http://rpc.testnet.secretsaturn.net")

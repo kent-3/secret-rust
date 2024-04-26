@@ -46,12 +46,12 @@ pub struct AuthQuerier {
 
 #[cfg(target_arch = "wasm32")]
 impl AuthQuerier {
-    pub fn new(base_url: impl Into<String>) -> Self {
+    pub async fn new(base_url: impl Into<String>) -> Result<Self> {
         let base_url = base_url.into();
         let web_wasm_client = ::tonic_web_wasm_client::Client::new(base_url);
         let inner = query_client::QueryClient::new(web_wasm_client);
 
-        Self { inner }
+        Ok(Self { inner })
     }
 }
 
