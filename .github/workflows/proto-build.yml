@@ -3,6 +3,10 @@ name: proto-build
 on:
   push:
     branches: main
+    paths:
+      - ".github/workflows/proto-build.yml"
+      - "proto-build/**"
+      - "Cargo.*"
   pull_request:
     paths:
       - ".github/workflows/proto-build.yml"
