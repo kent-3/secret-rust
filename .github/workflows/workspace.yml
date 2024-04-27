@@ -12,12 +12,15 @@ on:
 env:
   CARGO_TERM_COLOR: always
   RUSTFLAGS: -Dwarnings
+  SCCACHE_GHA_ENABLED: "true"
+  RUSTC_WRAPPER: "sccache"
 
 jobs:
   rustfmt:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - uses: mozilla-actions/sccache-action@v0.0.4
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: 1.72.0
@@ -27,7 +30,8 @@ jobs:
   clippy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - uses: mozilla-actions/sccache-action@v0.0.4
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: 1.72.0

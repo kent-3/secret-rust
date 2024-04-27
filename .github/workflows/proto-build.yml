@@ -16,11 +16,14 @@ defaults:
 env:
   CARGO_TERM_COLOR: always
   RUSTFLAGS: -Dwarnings
+  SCCACHE_GHA_ENABLED: "true"
+  RUSTC_WRAPPER: "sccache"
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - uses: mozilla-actions/sccache-action@v0.0.3
       - run: cargo build --verbose
       - run: cargo test --verbose
