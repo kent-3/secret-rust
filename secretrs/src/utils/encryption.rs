@@ -29,7 +29,7 @@ pub struct EncryptionUtils {
 
 impl EncryptionUtils {
     pub fn new(seed: Option<[u8; 32]>, chain_id: Option<&str>) -> Result<Self, String> {
-        let seed = seed.unwrap_or_else(|| EncryptionUtils::generate_new_seed());
+        let seed = seed.unwrap_or_else(EncryptionUtils::generate_new_seed);
         let (privkey, pubkey) = EncryptionUtils::generate_x25519_key_pair(&seed);
 
         let consensus_io_pub_key = if let Some(chain_id) = chain_id {
@@ -87,7 +87,7 @@ impl EncryptionUtils {
 
         let mut cipher = Aes128Siv::new(&Key::<Aes128Siv>::from(tx_encryption_key));
 
-        let plaintext = format!("{}{}", contract_code_hash, msg.to_string());
+        let plaintext = format!("{}{}", contract_code_hash, msg);
         let plaintext_bytes = plaintext.as_bytes();
 
         let ciphertext = cipher
@@ -105,11 +105,9 @@ impl EncryptionUtils {
         let tx_encryption_key = self.get_tx_encryption_key(nonce);
         let mut cipher = Aes128Siv::new(&Key::<Aes128Siv>::from(tx_encryption_key));
 
-        let plaintext = cipher
+        cipher
             .decrypt([[]], ciphertext)
-            .expect("Encryption failure");
-
-        return plaintext;
+            .expect("Encryption failure")
     }
 
     fn get_tx_encryption_key(&self, nonce: &[u8; 32]) -> [u8; 32] {
@@ -169,25 +167,25 @@ impl EncryptionUtils {
 pub struct SecretMsg(Vec<u8>);
 
 impl SecretMsg {
-    fn into_nonce(&self) -> [u8; 32] {
+    fn into_nonce(self) -> [u8; 32] {
         let mut array = [0u8; 32];
         array.copy_from_slice(&self.0[0..32]);
 
         array
     }
 
-    fn into_pubkey(&self) -> [u8; 32] {
+    fn into_pubkey(self) -> [u8; 32] {
         let mut array = [0u8; 32];
         array.copy_from_slice(&self.0[32..64]);
 
         array
     }
 
-    fn into_ciphertext(&self) -> Vec<u8> {
+    fn into_ciphertext(self) -> Vec<u8> {
         self.0[64..].to_vec()
     }
 
-    fn into_parts(&self) -> ([u8; 32], [u8; 32], Vec<u8>) {
+    fn into_parts(self) -> ([u8; 32], [u8; 32], Vec<u8>) {
         let mut nonce = [0u8; 32];
         nonce.copy_from_slice(&self.0[0..32]);
         let mut pubkey = [0u8; 32];
