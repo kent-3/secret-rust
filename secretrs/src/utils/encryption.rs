@@ -83,18 +83,20 @@ impl EncryptionUtils {
         })
     }
 
-    pub fn encrypt(&self, contract_code_hash: &str, msg: &serde_json::Value) -> Result<SecretMsg> {
+    pub fn encrypt<M: serde::Serialize>(
+        &self,
+        contract_code_hash: &str,
+        msg: &M,
+    ) -> Result<SecretMsg> {
         let nonce = Self::generate_nonce();
         let tx_encryption_key = self.get_tx_encryption_key(&nonce);
 
         let mut cipher = Aes128Siv::new(&Key::<Aes128Siv>::from(tx_encryption_key));
 
-        let plaintext = format!("{contract_code_hash}{msg}");
-        let plaintext_bytes = plaintext.as_bytes();
+        let msg = serde_json::to_vec(msg).expect("msg cannot be serialized as JSON");
+        let plaintext = [contract_code_hash.as_bytes(), msg.as_slice()].concat();
 
-        let ciphertext = cipher
-            .encrypt([[]], plaintext_bytes)
-            .map_err(Error::AesSiv)?;
+        let ciphertext = cipher.encrypt([[]], &plaintext).map_err(Error::AesSiv)?;
 
         let msg: SecretMsg = [nonce.as_slice(), self.pubkey.as_bytes(), &ciphertext]
             .concat()
@@ -217,20 +219,18 @@ mod test {
     use super::*;
     use serde::{Deserialize, Serialize};
 
-    // #[tokio::test]
+    #[derive(Serialize, Deserialize)]
+    struct Msg {
+        foo: String,
+        bar: u32,
+    }
+
     #[test]
     fn encryption_utils() -> Result<()> {
-        #[derive(Serialize, Deserialize)]
-        struct Msg {
-            foo: String,
-            bar: u32,
-        }
         let msg = Msg {
             foo: "hello world".to_string(),
             bar: 42,
         };
-        let msg = serde_json::to_value(&msg)?;
-        println!("{msg:?}");
 
         let utils = EncryptionUtils::new(None, "secret-4").unwrap();
         let code_hash = "9a00ca4ad505e9be7e6e6dddf8d939b7ec7e9ac8e109c8681f10db9cacb36d42";
@@ -238,10 +238,9 @@ mod test {
 
         let (nonce, _pubkey, ciphertext) = encrypted.into_parts();
         let decrypted_bytes = utils.decrypt(&nonce, &ciphertext)?;
-        let decrypted_msg = String::from_utf8(decrypted_bytes).unwrap();
 
-        let plaintext = format!("{code_hash}{msg}");
-        println!("{plaintext:?}");
+        let plaintext = format!("{}{}", code_hash, serde_json::to_string(&msg)?);
+        let decrypted_msg = String::from_utf8(decrypted_bytes).unwrap();
         assert_eq!(plaintext, decrypted_msg);
 
         Ok(())
