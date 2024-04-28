@@ -4,6 +4,8 @@ pub(crate) mod crypto;
 pub mod error;
 pub mod types;
 
+pub mod encryption;
+
 pub use crate::utils::error::Error;
 pub use account::Account;
 pub use types::{CodeHash, CodeId, Contract, TxResponse};

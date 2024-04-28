@@ -995,6 +995,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
+name = "hex-literal"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6fe2267d4ed49bc07b63801559be28c718ea06c4738b7a03c94df7386d2cde46"
+
+[[package]]
 name = "hkdf"
 version = "0.12.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1932,30 +1938,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "secret-utils"
-version = "0.0.0"
-dependencies = [
- "aes-siv",
- "async-trait",
- "base64 0.22.0",
- "bip32",
- "bip39",
- "color-eyre",
- "cosmrs",
- "hex",
- "hkdf",
- "nanorand",
- "regex",
- "secret-cosmwasm-std",
- "serde",
- "serde_json",
- "sha2 0.10.8",
- "thiserror",
- "tokio",
- "x25519-dalek",
-]
-
-[[package]]
 name = "secretrs"
 version = "0.0.0"
 dependencies = [
@@ -1967,7 +1949,9 @@ dependencies = [
  "color-eyre",
  "cosmrs",
  "hex",
+ "hex-literal",
  "hkdf",
+ "lazy_static",
  "nanorand",
  "regex",
  "secret-cosmwasm-std",
@@ -1977,6 +1961,7 @@ dependencies = [
  "sha2 0.10.8",
  "thiserror",
  "tokio",
+ "tokio-test",
  "tonic",
  "tonic-web-wasm-client",
  "x25519-dalek",
@@ -2519,6 +2504,19 @@ dependencies = [
  "futures-core",
  "pin-project-lite",
  "tokio",
+]
+
+[[package]]
+name = "tokio-test"
+version = "0.4.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2468baabc3311435b55dd935f702f42cd1b8abb7e754fb7dfb16bd36aa88f9f7"
+dependencies = [
+ "async-stream",
+ "bytes",
+ "futures-core",
+ "tokio",
+ "tokio-stream",
 ]
 
 [[package]]
