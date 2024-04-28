@@ -4,13 +4,26 @@ use lazy_static::lazy_static;
 use nanorand::rand::Rng;
 use x25519_dalek::{PublicKey, StaticSecret};
 
-const HKDF_SALT: &'static [u8] =
-    &hex_literal::hex!("000000000000000000024bead8df69990852c202db0e0097c1a12ea637d7e96d");
+const HKDF_SALT: [u8; 32] =
+    hex_literal::hex!("000000000000000000024bead8df69990852c202db0e0097c1a12ea637d7e96d");
+
+const TESTNET_IO_PUBKEY: [u8; 32] =
+    hex_literal::hex!("e24a22b31e3d34e0e00bcd32189548f1ccbdc9cda8f5a266219b908582b6f03f");
+
+const MAINNET_IO_PUBKEY: [u8; 32] =
+    hex_literal::hex!("efdfbee583877e6d12c219695030a5bfb72e0a3abdc416655aa4a30c95a4446f");
 
 lazy_static! {
-    static ref MAINNET_CONSENSUS_IO_PUB_KEY: Vec<u8> = BASE64_STANDARD
-        .decode("79++5YOHfm0SwhlpUDClv7cuCjq9xBZlWqSjDJWkRG8=")
-        .unwrap();
+    static ref MAINNET_CONSENSUS_IO_PUBKEY: [u8; 32] = {
+        let decoded_bytes = BASE64_STANDARD
+            .decode("79++5YOHfm0SwhlpUDClv7cuCjq9xBZlWqSjDJWkRG8=")
+            .expect("IO key could not be base64 decoded");
+
+        let array: [u8; 32] = decoded_bytes
+            .try_into()
+            .expect("Decoded bytes are not of length 32");
+        array
+    };
 }
 
 const MAINNET_CHAIN_IDS: [&str; 3] = ["secret-2", "secret-3", "secret-4"];
@@ -23,33 +36,32 @@ pub struct EncryptionUtils {
 }
 
 impl EncryptionUtils {
-    pub fn new(
-        seed: Option<[u8; 32]>,
-        chain_id: Option<&str>,
-        io_key: Option<[u8; 32]>,
-    ) -> Result<Self, String> {
+    pub fn new(seed: Option<[u8; 32]>, chain_id: Option<&str>) -> Result<Self, String> {
         let seed = seed.unwrap_or_else(EncryptionUtils::generate_new_seed);
         let (privkey, pubkey) = EncryptionUtils::generate_x25519_key_pair(&seed);
 
-        let mut consensus_io_pubkey = [0u8; 32];
+        let consensus_io_pubkey = match chain_id {
+            Some(chain_id) if MAINNET_CHAIN_IDS.contains(&chain_id) => Ok(MAINNET_IO_PUBKEY),
+            Some(_) => Err("Chain ID provided is not supported on mainnet".to_string()),
+            None => Err(
+                "A chain ID must be provided unless an IO key is directly specified".to_string(),
+            ),
+        }?;
 
-        if let Some(io_key) = io_key {
-            consensus_io_pubkey = io_key;
-        } else if let Some(chain_id) = chain_id {
-            if MAINNET_CHAIN_IDS.contains(&chain_id) {
-                let decoded_vec = BASE64_STANDARD
-                    .decode("79++5YOHfm0SwhlpUDClv7cuCjq9xBZlWqSjDJWkRG8=")
-                    .expect("IO key could not be base64 decoded");
+        Ok(EncryptionUtils {
+            seed,
+            privkey,
+            pubkey,
+            consensus_io_pubkey,
+        })
+    }
 
-                let mut io_key = [0u8; 32];
-                io_key.copy_from_slice(&decoded_vec); // Safely copy the data into the array
-                consensus_io_pubkey = io_key;
-            } else {
-                return Err(
-                    "you need to provide a chain id if you don't provide an io key".to_string(),
-                );
-            };
-        };
+    pub fn from_io_key(
+        consensus_io_pubkey: [u8; 32],
+        seed: Option<[u8; 32]>,
+    ) -> Result<Self, String> {
+        let seed = seed.unwrap_or_else(EncryptionUtils::generate_new_seed);
+        let (privkey, pubkey) = EncryptionUtils::generate_x25519_key_pair(&seed);
 
         Ok(EncryptionUtils {
             seed,
@@ -117,7 +129,7 @@ impl EncryptionUtils {
         let ikm = &[shared.as_bytes(), nonce.as_slice()].concat();
 
         let mut key = [0u8; 32];
-        hkdf::Hkdf::<sha2::Sha256>::new(Some(HKDF_SALT), ikm)
+        hkdf::Hkdf::<sha2::Sha256>::new(Some(&HKDF_SALT), ikm)
             .expand(&[], &mut key)
             .expect("HKDF expansion error");
 
@@ -211,7 +223,7 @@ mod test {
     // #[tokio::test]
     #[test]
     fn encryption_utils() {
-        let utils = EncryptionUtils::new(None, Some("secret-4"), None).unwrap();
+        let utils = EncryptionUtils::new(None, Some("secret-4")).unwrap();
         let code_hash = "9a00ca4ad505e9be7e6e6dddf8d939b7ec7e9ac8e109c8681f10db9cacb36d42";
         let msg = serde_json::Value::from("barfoo".to_string());
         let plaintext = format!("{}{}", code_hash, msg.to_string());
