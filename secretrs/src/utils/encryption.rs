@@ -23,29 +23,33 @@ pub struct EncryptionUtils {
 }
 
 impl EncryptionUtils {
-    pub fn new(seed: Option<[u8; 32]>, chain_id: Option<&str>) -> Result<Self, String> {
+    pub fn new(
+        seed: Option<[u8; 32]>,
+        chain_id: Option<&str>,
+        io_key: Option<[u8; 32]>,
+    ) -> Result<Self, String> {
         let seed = seed.unwrap_or_else(EncryptionUtils::generate_new_seed);
         let (privkey, pubkey) = EncryptionUtils::generate_x25519_key_pair(&seed);
 
-        let consensus_io_pub_key = if let Some(chain_id) = chain_id {
+        let mut consensus_io_pubkey = [0u8; 32];
+
+        if let Some(io_key) = io_key {
+            consensus_io_pubkey = io_key;
+        } else if let Some(chain_id) = chain_id {
             if MAINNET_CHAIN_IDS.contains(&chain_id) {
                 let decoded_vec = BASE64_STANDARD
                     .decode("79++5YOHfm0SwhlpUDClv7cuCjq9xBZlWqSjDJWkRG8=")
-                    .unwrap();
+                    .expect("IO key could not be base64 decoded");
 
-                if decoded_vec.len() != 32 {
-                    return Err("Decoded data is not 32 bytes long".to_string());
-                }
-
-                let mut array = [0u8; 32];
-                array.copy_from_slice(&decoded_vec); // Safely copy the data into the array
-                Ok(array)
+                let mut io_key = [0u8; 32];
+                io_key.copy_from_slice(&decoded_vec); // Safely copy the data into the array
+                consensus_io_pubkey = io_key;
             } else {
-                Err("not mainnet".to_string())
-            }
-        } else {
-            Err("no chain id provided".to_string())
-        }?;
+                return Err(
+                    "you need to provide a chain id if you don't provide an io key".to_string(),
+                );
+            };
+        };
 
         Ok(EncryptionUtils {
             seed,
@@ -207,7 +211,7 @@ mod test {
     // #[tokio::test]
     #[test]
     fn encryption_utils() {
-        let utils = EncryptionUtils::new(None, Some("secret-4")).unwrap();
+        let utils = EncryptionUtils::new(None, Some("secret-4"), None).unwrap();
         let code_hash = "9a00ca4ad505e9be7e6e6dddf8d939b7ec7e9ac8e109c8681f10db9cacb36d42";
         let msg = serde_json::Value::from("barfoo".to_string());
         let plaintext = format!("{}{}", code_hash, msg.to_string());
