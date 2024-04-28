@@ -14,21 +14,6 @@ use crate::utils::error::Result;
 use crypto::{Decrypter, Nonce};
 use std::str::FromStr;
 
-// IDEA - for a nice API, take as input only a code_hash, enclave_public_key, and some entropy.
-// do a sha256 on the entropy to get a [u8;32] to use as the prv_key. generate a pub_key.
-// return a struct that has methods for encrypt and decrypt
-//
-// let enigma = secretrs::Enigma::new(code_hash, enclave_public_key, entropy);
-// let encrypted = enigma.encrypt(msg);
-//
-// OR
-//
-// let (encrypter, decrypter) = secretrs::Enigma::new(code_hash, enclave_public_key, entropy);
-// let encrypted = encrypter.encrypt(msg);
-
-// TODO - instead of `Account`, accept a key / seed [u8; 32]
-// For queries, the specific keys don't matter, so it doesn't make sense to require `Account`
-// as input. You only need to provide a private key / seed, and it returns a prv_pub pair.
 pub async fn encrypt_msg<M: serde::Serialize>(
     msg: &M,
     code_hash: &str,
