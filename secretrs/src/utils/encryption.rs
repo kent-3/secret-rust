@@ -4,13 +4,8 @@ use lazy_static::lazy_static;
 use nanorand::rand::Rng;
 use x25519_dalek::{PublicKey, StaticSecret};
 
-// const HKDF_SALT: &'static [u8] =
-//     &hex_literal::hex!("000000000000000000024bead8df69990852c202db0e0097c1a12ea637d7e96d");
-
-static HKDF_SALT: &[u8; 32] = &[
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x4b, 0xea, 0xd8, 0xdf, 0x69, 0x99,
-    0x08, 0x52, 0xc2, 0x02, 0xdb, 0x0e, 0x00, 0x97, 0xc1, 0xa1, 0x2e, 0xa6, 0x37, 0xd7, 0xe9, 0x6d,
-];
+const HKDF_SALT: &'static [u8] =
+    &hex_literal::hex!("000000000000000000024bead8df69990852c202db0e0097c1a12ea637d7e96d");
 
 lazy_static! {
     static ref MAINNET_CONSENSUS_IO_PUB_KEY: Vec<u8> = BASE64_STANDARD
@@ -24,7 +19,7 @@ pub struct EncryptionUtils {
     seed: [u8; 32],
     privkey: StaticSecret,
     pubkey: PublicKey,
-    consensus_io_pub_key: [u8; 32],
+    consensus_io_pubkey: [u8; 32],
 }
 
 impl EncryptionUtils {
@@ -56,7 +51,7 @@ impl EncryptionUtils {
             seed,
             privkey,
             pubkey,
-            consensus_io_pub_key,
+            consensus_io_pubkey,
         })
     }
 
@@ -112,7 +107,7 @@ impl EncryptionUtils {
 
     fn get_tx_encryption_key(&self, nonce: &[u8; 32]) -> [u8; 32] {
         let secret = &self.privkey;
-        let public = x25519_dalek::PublicKey::from(self.consensus_io_pub_key);
+        let public = x25519_dalek::PublicKey::from(self.consensus_io_pubkey);
         let shared = secret.diffie_hellman(&public);
 
         let ikm = &[shared.as_bytes(), nonce.as_slice()].concat();
