@@ -4,10 +4,7 @@ use cosmrs::{
 };
 use cosmwasm_std::Addr;
 
-use crate::utils::{
-    consts,
-    crypto::{self, Key},
-};
+use super::consts;
 
 #[derive(Clone)]
 pub struct Account {
@@ -62,8 +59,13 @@ impl Account {
             .expect("invalid public key type")
     }
 
-    pub(crate) fn prv_pub_bytes(&self) -> (Key, Key) {
-        crypto::edd25519_keys(&self.prvk)
+    pub(crate) fn prv_pub_bytes(&self) -> ([u8; 32], [u8; 32]) {
+        let mut secret = [0u8; 32];
+        secret.clone_from_slice(&self.prvk.private_key().to_bytes());
+        let secret = x25519_dalek::StaticSecret::from(secret);
+        let public = x25519_dalek::PublicKey::from(&secret);
+
+        (secret.to_bytes(), public.to_bytes())
     }
 }
 
