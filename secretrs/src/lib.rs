@@ -1,7 +1,10 @@
 pub use cosmrs::*;
 pub use secret_sdk_proto::{self as proto, SECRET_VERSION};
 
+pub mod account;
 pub mod compute;
+#[cfg(feature = "grpc-core")]
+pub mod grpc;
 pub mod utils;
 
 #[cfg(feature = "grpc-core")]

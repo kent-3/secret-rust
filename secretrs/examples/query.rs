@@ -1,12 +1,13 @@
 use color_eyre::{eyre::OptionExt, owo_colors::OwoColorize, Result};
 use secretrs::{
-    clients::{AuthQueryClient, BankQueryClient, ComputeQueryClient},
+    clients::{AuthQueryClient, BankQueryClient, ComputeQueryClient, TxServiceClient},
+    grpc::GrpcClient,
     proto,
 };
 use tonic::IntoRequest;
 
-const GRPC_URL: &str = "http://localhost:9090";
-// const GRPC_URL: &str = "http://grpc.testnet.secretsaturn.net:9090";
+// const GRPC_URL: &str = "http://localhost:9090";
+const GRPC_URL: &str = "http://grpc.testnet.secretsaturn.net:9090";
 const TEST_ADDRESS: &str = "secret1ap26qrlp8mcq2pg6r47w43l0y8zkqm8a450s03";
 
 async fn async_main() -> Result<()> {
@@ -106,6 +107,20 @@ async fn async_main() -> Result<()> {
 
     let response = response.into_inner();
     println!("Response => {:?}", response.green());
+
+    // Tx Search
+    println!("\n{}", "Tx Search".underline().blue());
+    println!("Creating `tx` service client...");
+
+    use secretrs::tendermint::Hash;
+    use secretrs::Tx;
+
+    let mut tx_client = TxServiceClient::connect(GRPC_URL).await?;
+    let tx_hash = Hash::try_from(hex::decode(
+        "00CA925FBE9E424480DCA762F87F3C6DB94F0D17118C09D96C21FA5D1CCD28A3",
+    )?)?;
+    let tx = Tx::grpc_find_by_hash(&mut tx_client, tx_hash).await?;
+    println!("Tx => {:?}", tx.purple());
 
     Ok(())
 }
