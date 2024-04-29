@@ -9,8 +9,13 @@ pub type Result<T> = core::result::Result<T, Error>;
 
 #[derive(Debug, From)]
 pub enum Error {
-    #[from]
-    Custom(String),
+    EmptyCiphertext,
+
+    InvalidCodeHash,
+
+    InvalidChainId {
+        chain_id: String,
+    },
 
     #[from]
     FromHex(hex::FromHexError),
@@ -23,18 +28,6 @@ pub enum Error {
 
     #[from]
     AesSiv(aes_siv::Error),
-}
-
-impl Error {
-    pub fn custom(value: impl std::fmt::Display) -> Self {
-        Self::Custom(value.to_string())
-    }
-}
-
-impl From<&str> for Error {
-    fn from(value: &str) -> Self {
-        Self::Custom(value.to_string())
-    }
 }
 
 impl core::fmt::Display for Error {
@@ -52,7 +45,7 @@ const MAINNET_CHAIN_IDS: [&str; 3] = ["secret-2", "secret-3", "secret-4"];
 const DEVNET_IO_PUBKEY: [u8; 32] =
     hex!("ea7f818284fec45ee630ec2ee7f1b160fbfb169042c13525e0024b88f204d96b");
 const TESTNET_IO_PUBKEY: [u8; 32] =
-    hex!("e24a22b31e3d34e0e00bcd32189548f1ccbdc9cda8f5a266219b908582b6f03f");
+    hex!("e2b40597d50457d95290bdee480b8bc3400e9f40c2a5d69c9519f1fee2e24933");
 const MAINNET_IO_PUBKEY: [u8; 32] =
     hex!("efdfbee583877e6d12c219695030a5bfb72e0a3abdc416655aa4a30c95a4446f");
 const HKDF_SALT: [u8; 32] =
@@ -74,7 +67,9 @@ impl EncryptionUtils {
             chain_id if MAINNET_CHAIN_IDS.contains(&chain_id) => Ok(MAINNET_IO_PUBKEY),
             chain_id if TESTNET_CHAIN_IDS.contains(&chain_id) => Ok(TESTNET_IO_PUBKEY),
             chain_id if DEVNET_CHAIN_IDS.contains(&chain_id) => Ok(DEVNET_IO_PUBKEY),
-            _ => Err(Error::custom(format!("{chain_id} is not supported"))),
+            _ => Err(Error::InvalidChainId {
+                chain_id: chain_id.to_string(),
+            }),
         }?;
 
         Ok(EncryptionUtils {
@@ -103,7 +98,7 @@ impl EncryptionUtils {
         msg: &M,
     ) -> Result<SecretMsg> {
         if contract_code_hash.len() != 64 {
-            return Err(Error::custom("invalid code hash"));
+            return Err(Error::InvalidCodeHash);
         }
 
         let nonce = Self::generate_nonce();
@@ -125,7 +120,7 @@ impl EncryptionUtils {
 
     pub fn decrypt(&self, nonce: &[u8; 32], ciphertext: &[u8]) -> Result<Vec<u8>> {
         if ciphertext.is_empty() {
-            return Err(Error::custom("ciphertext is empty"));
+            return Err(Error::EmptyCiphertext);
         }
 
         let tx_encryption_key = self.get_tx_encryption_key(nonce);
@@ -186,28 +181,28 @@ pub struct SecretMsg(Vec<u8>);
 
 #[allow(unused)]
 impl SecretMsg {
-    fn nonce(&self) -> [u8; 32] {
+    pub fn nonce(&self) -> [u8; 32] {
         let mut array = [0u8; 32];
         array.copy_from_slice(&self.0[0..32]);
 
         array
     }
 
-    fn pubkey(&self) -> [u8; 32] {
+    pub fn pubkey(&self) -> [u8; 32] {
         let mut array = [0u8; 32];
         array.copy_from_slice(&self.0[32..64]);
 
         array
     }
 
-    fn ciphertext(&self) -> Vec<u8> {
+    pub fn ciphertext(&self) -> Vec<u8> {
         self.0[64..].to_vec()
     }
 
     /// Consumes `self` returning the parts of the message.
     ///
     /// Returns `(nonce, pubkey, ciphertext)`
-    fn into_parts(self) -> ([u8; 32], [u8; 32], Vec<u8>) {
+    pub fn into_parts(self) -> ([u8; 32], [u8; 32], Vec<u8>) {
         let mut nonce = [0u8; 32];
         nonce.copy_from_slice(&self.0[0..32]);
         let mut pubkey = [0u8; 32];
@@ -218,7 +213,7 @@ impl SecretMsg {
     }
 
     /// Consumes `self` returning the message as `Vec<u8>`
-    fn into_inner(self) -> Vec<u8> {
+    pub fn into_inner(self) -> Vec<u8> {
         self.0
     }
 }
