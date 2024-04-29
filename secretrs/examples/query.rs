@@ -2,7 +2,8 @@ use color_eyre::{eyre::OptionExt, owo_colors::OwoColorize, Result};
 use secretrs::{proto, AuthQueryClient, BankQueryClient, ComputeQueryClient};
 use tonic::IntoRequest;
 
-const GRPC_URL: &str = "http://grpc.testnet.secretsaturn.net:9090";
+const GRPC_URL: &str = "http://localhost:9090";
+// const GRPC_URL: &str = "http://grpc.testnet.secretsaturn.net:9090";
 const TEST_ADDRESS: &str = "secret1ap26qrlp8mcq2pg6r47w43l0y8zkqm8a450s03";
 
 async fn async_main() -> Result<()> {
@@ -112,6 +113,7 @@ fn main() -> Result<()> {
     // Create a new Tokio runtime using the current thread scheduler
     let rt = tokio::runtime::Builder::new_current_thread()
         .enable_io()
+        .enable_time()
         .build()
         .unwrap();
 
