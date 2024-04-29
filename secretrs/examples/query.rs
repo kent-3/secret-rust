@@ -1,5 +1,8 @@
 use color_eyre::{eyre::OptionExt, owo_colors::OwoColorize, Result};
-use secretrs::{proto, AuthQueryClient, BankQueryClient, ComputeQueryClient};
+use secretrs::{
+    clients::{AuthQueryClient, BankQueryClient, ComputeQueryClient},
+    proto,
+};
 use tonic::IntoRequest;
 
 const GRPC_URL: &str = "http://localhost:9090";

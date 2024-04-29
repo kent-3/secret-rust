@@ -7,7 +7,7 @@ use cosmrs::rpc::endpoint::abci_query::AbciQuery;
 use cosmrs::Any;
 use prost::Message;
 
-use secretrs::AuthQueryClient;
+use secretrs::clients::AuthQueryClient;
 
 use ::cosmrs::proto::cosmos::auth::v1beta1::*;
 use ::cosmrs::proto::cosmos::base::query::v1beta1::{PageRequest, PageResponse};

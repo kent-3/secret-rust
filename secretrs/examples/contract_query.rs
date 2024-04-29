@@ -3,11 +3,11 @@ use color_eyre::{owo_colors::OwoColorize, Result};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 
-use secretrs::proto::secret::compute::v1beta1::{
-    QueryByContractAddressRequest, QuerySecretContractRequest,
+use secretrs::{
+    clients::{ComputeQueryClient, RegistrationQueryClient},
+    proto::secret::compute::v1beta1::{QueryByContractAddressRequest, QuerySecretContractRequest},
+    utils::encryption::EncryptionUtils,
 };
-use secretrs::utils::{decrypter, encrypt_msg};
-use secretrs::{ComputeQueryClient, RegistrationQueryClient};
 
 const GRPC_URL: &str = "http://grpc.testnet.secretsaturn.net:9090";
 const CONTRACT_ADDRESS: &str = "secret19gtpkk25r0c36gtlyrc6repd3q52ngmkpfszw3";
@@ -46,29 +46,29 @@ async fn main() -> Result<()> {
 
     // Encryption Utils section
 
-    let account = secretrs::utils::Account::random();
-
-    let (nonce, encrypted) = encrypt_msg(&query, &code_hash, &account, &enclave_key).await?;
-    let decrypter = decrypter(&nonce, &account, &enclave_key).await?;
+    let encryption_utils = EncryptionUtils::new(None, "pulsar-3")?;
+    let encrypted = encryption_utils.encrypt(&code_hash, &query)?;
+    let nonce = encrypted.nonce();
+    let query = encrypted.into_inner();
 
     // Encryption Utils section
 
     let display_request = format!(
         "QuerySecretContractRequest {{ contract_address: \"{}\", query: \"{}\" }}",
         CONTRACT_ADDRESS,
-        BASE64_STANDARD.encode(&encrypted)
+        BASE64_STANDARD.encode(&query)
     );
     println!("Request => {:>4}", display_request.green());
 
     let request = QuerySecretContractRequest {
         contract_address: CONTRACT_ADDRESS.to_string(),
-        query: encrypted,
+        query,
     };
 
     let response = match secret_compute.query_secret_contract(request).await {
         Ok(response) => {
             let response = response.into_inner();
-            let decrypted_bytes = decrypter.decrypt(&response.data)?;
+            let decrypted_bytes = encryption_utils.decrypt(&nonce, &response.data)?;
             let decrypted_b64_string = String::from_utf8(decrypted_bytes)?;
             let decoded_bytes = BASE64_STANDARD.decode(decrypted_b64_string)?;
             let data = String::from_utf8(decoded_bytes)?;
@@ -82,7 +82,7 @@ async fn main() -> Result<()> {
 
             if let Some(caps) = re.captures(error_message) {
                 let encrypted_bytes = BASE64_STANDARD.decode(&caps[1])?;
-                let decrypted_bytes = decrypter.decrypt(&encrypted_bytes)?;
+                let decrypted_bytes = encryption_utils.decrypt(&nonce, &encrypted_bytes)?;
                 let decrypted_string = String::from_utf8(decrypted_bytes)?;
                 Err(secretrs::utils::Error::Generic(decrypted_string))
             } else {
