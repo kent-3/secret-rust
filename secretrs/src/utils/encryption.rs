@@ -102,12 +102,16 @@ impl EncryptionUtils {
         contract_code_hash: &str,
         msg: &M,
     ) -> Result<SecretMsg> {
+        if contract_code_hash.len() != 64 {
+            return Err(Error::custom("invalid code hash"));
+        }
+
         let nonce = Self::generate_nonce();
         let tx_encryption_key = self.get_tx_encryption_key(&nonce);
 
         let mut cipher = Aes128Siv::new(&Key::<Aes128Siv>::from(tx_encryption_key));
 
-        let msg = serde_json::to_vec(msg).expect("msg cannot be serialized as JSON");
+        let msg = serde_json::to_vec(msg)?;
         let plaintext = [contract_code_hash.as_bytes(), msg.as_slice()].concat();
 
         let ciphertext = cipher.encrypt([[]], &plaintext).map_err(Error::AesSiv)?;
@@ -246,7 +250,7 @@ mod test {
             bar: 42,
         };
 
-        let utils = EncryptionUtils::new(None, "secret-4").unwrap();
+        let utils = EncryptionUtils::new(None, "secret-4")?;
         let code_hash = "9a00ca4ad505e9be7e6e6dddf8d939b7ec7e9ac8e109c8681f10db9cacb36d42";
         let encrypted = utils.encrypt(code_hash, &msg)?;
 
@@ -254,8 +258,20 @@ mod test {
         let decrypted_bytes = utils.decrypt(&nonce, &ciphertext)?;
 
         let plaintext = format!("{}{}", code_hash, serde_json::to_string(&msg)?);
-        let decrypted_msg = String::from_utf8(decrypted_bytes).unwrap();
+        let decrypted_msg = String::from_utf8(decrypted_bytes)?;
         assert_eq!(plaintext, decrypted_msg);
+
+        // test that the same seed will produce the same pubkey
+
+        let seed = utils.get_seed();
+        let pubkey = utils.get_pubkey();
+
+        let utils2 = EncryptionUtils::new(Some(seed), "secret-4")?;
+        let seed2 = utils2.get_seed();
+        let pubkey2 = utils2.get_pubkey();
+
+        assert_eq!(seed, seed2);
+        assert_eq!(pubkey, pubkey2);
 
         Ok(())
     }
