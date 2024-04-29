@@ -1,9 +1,9 @@
-use aes_siv::{siv::Aes128Siv, Key, KeyInit};
 use derive_more::From;
+use hex_literal::hex;
 use nanorand::rand::Rng;
-use x25519_dalek::{PublicKey, StaticSecret};
 
-// TODO - add devnet chain_id and key
+use aes_siv::{siv::Aes128Siv, Key, KeyInit};
+use x25519_dalek::{PublicKey, StaticSecret};
 
 pub type Result<T> = core::result::Result<T, Error>;
 
@@ -11,6 +11,15 @@ pub type Result<T> = core::result::Result<T, Error>;
 pub enum Error {
     #[from]
     Custom(String),
+
+    #[from]
+    FromHex(hex::FromHexError),
+
+    #[from]
+    FromUtf8(std::string::FromUtf8Error),
+
+    #[from]
+    SerdeJson(serde_json::Error),
 
     #[from]
     AesSiv(aes_siv::Error),
@@ -36,14 +45,18 @@ impl core::fmt::Display for Error {
 
 impl std::error::Error for Error {}
 
+const DEVNET_CHAIN_IDS: [&str; 1] = ["secretdev-1"];
 const TESTNET_CHAIN_IDS: [&str; 1] = ["pulsar-3"];
-const TESTNET_IO_PUBKEY: [u8; 32] =
-    hex_literal::hex!("e24a22b31e3d34e0e00bcd32189548f1ccbdc9cda8f5a266219b908582b6f03f");
-const MAINNET_IO_PUBKEY: [u8; 32] =
-    hex_literal::hex!("efdfbee583877e6d12c219695030a5bfb72e0a3abdc416655aa4a30c95a4446f");
 const MAINNET_CHAIN_IDS: [&str; 3] = ["secret-2", "secret-3", "secret-4"];
+
+const DEVNET_IO_PUBKEY: [u8; 32] =
+    hex!("ea7f818284fec45ee630ec2ee7f1b160fbfb169042c13525e0024b88f204d96b");
+const TESTNET_IO_PUBKEY: [u8; 32] =
+    hex!("e24a22b31e3d34e0e00bcd32189548f1ccbdc9cda8f5a266219b908582b6f03f");
+const MAINNET_IO_PUBKEY: [u8; 32] =
+    hex!("efdfbee583877e6d12c219695030a5bfb72e0a3abdc416655aa4a30c95a4446f");
 const HKDF_SALT: [u8; 32] =
-    hex_literal::hex!("000000000000000000024bead8df69990852c202db0e0097c1a12ea637d7e96d");
+    hex!("000000000000000000024bead8df69990852c202db0e0097c1a12ea637d7e96d");
 
 pub struct EncryptionUtils {
     seed: [u8; 32],
@@ -60,6 +73,7 @@ impl EncryptionUtils {
         let consensus_io_pubkey = match chain_id {
             chain_id if MAINNET_CHAIN_IDS.contains(&chain_id) => Ok(MAINNET_IO_PUBKEY),
             chain_id if TESTNET_CHAIN_IDS.contains(&chain_id) => Ok(TESTNET_IO_PUBKEY),
+            chain_id if DEVNET_CHAIN_IDS.contains(&chain_id) => Ok(DEVNET_IO_PUBKEY),
             _ => Err(Error::custom(format!("{chain_id} is not supported"))),
         }?;
 
