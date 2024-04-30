@@ -15,8 +15,9 @@ pub mod clients;
 
 pub mod utils;
 
-#[cfg(feature = "dev")]
-pub mod dev;
+// TODO - this really belongs in a separate crate
+// #[cfg(feature = "dev")]
+// pub mod dev;
 
 // Experimental mods
 pub mod secret_rs;

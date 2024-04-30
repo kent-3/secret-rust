@@ -34,6 +34,7 @@ pub use ::cosmrs::proto::cosmos::tx::v1beta1::service_client::ServiceClient as T
 
 // Experimental!
 
+#[cfg(feature = "grpc")]
 #[async_trait]
 pub trait GrpcClient {
     async fn grpc_find_by_hash(
@@ -42,6 +43,7 @@ pub trait GrpcClient {
     ) -> Result<Tx>;
 }
 
+#[cfg(feature = "grpc")]
 #[async_trait]
 impl GrpcClient for Tx {
     async fn grpc_find_by_hash(

@@ -21,6 +21,11 @@ path = "examples/query.rs"
 required-features = ["grpc"]
 
 [[example]]
+name = "tx"
+path = "examples/tx.rs"
+required-features = ["grpc"]
+
+[[example]]
 name = "contract_query"
 path = "examples/contract_query.rs"
 required-features = ["grpc"]
@@ -54,13 +59,13 @@ x25519-dalek = { version = "2.0.1", features = ["static_secrets"] }
 thiserror = "1.0.51"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-tokio = { version = "1.37", optional = true, features = ["rt-multi-thread", "sync", "time", "macros"] }
+# tokio = { version = "1.37", optional = true, features = ["rt-multi-thread", "sync", "time", "macros"] }
 tonic = { version = "0.11.0", features = ["tls", "tls-webpki-roots", "transport"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 getrandom = { version = "0.2.14", features = ["js"] }
 nanorand = { version = "0.7.0", features = ["getrandom", "zeroize"] }
-tokio = { version = "1.37", optional = true, features = ["rt", "sync", "time", "macros"] }
+# tokio = { version = "1.37", optional = true, features = ["rt", "sync", "time", "macros"] }
 tonic-web-wasm-client = "0.5.1"
 
 [dev-dependencies]
@@ -85,7 +90,7 @@ getrandom = ["cosmrs/getrandom"]
 grpc-core = ["cosmrs/grpc-core", "secret-sdk-proto/grpc"]
 # `grpc` enables the 'transport' feature of tonic (not compatible with wasm)
 grpc = ["grpc-core", "cosmrs/grpc", "secret-sdk-proto/grpc-transport"]
-dev = ["tokio"]
+# dev = ["tokio"]
 
 [package.metadata.docs.rs]
 all-features = true
