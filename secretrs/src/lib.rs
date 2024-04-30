@@ -19,12 +19,10 @@ pub mod utils;
 // #[cfg(feature = "dev")]
 // pub mod dev;
 
-// Experimental mods
-pub mod secret_rs;
+// Experimental
+pub mod incubator;
 
-pub use crate::{
-    secret_rs::{account, Wallet},
-    utils::EncryptionUtils,
-};
+pub use crate::incubator::{account, Wallet};
+pub use crate::utils::EncryptionUtils;
 
 pub use secret_sdk_proto::{self as proto, SECRET_VERSION};
