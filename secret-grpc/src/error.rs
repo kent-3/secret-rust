@@ -6,8 +6,8 @@ pub use crate::crypto::CryptoError;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    #[error("RPC failure: {0}")]
-    Rpc(#[from] secretrs::rpc::Error),
+    #[error("{0}")]
+    Generic(String),
     #[error("Failed to read contract file: {0} - {1}")]
     ContractFile(String, std::io::Error),
     #[error("Contract with label {0} already deployed")]
@@ -18,14 +18,12 @@ pub enum Error {
     FirstBlockTimeout(u128),
     #[error("ABCI Query failed: {0}")]
     AbciQuery(String),
-    #[error("Decoding protobuf response failed: {0}")]
-    ProtobufDecode(#[from] prost::DecodeError),
     #[error("CosmWasm Error: {0}")]
     CosmWasm(#[from] cosmwasm_std::StdError),
     #[error("Account {0} not found")]
     AccountNotFound(cosmwasm_std::Addr),
     #[error("CosmRs error: {0}")]
-    CosmRs(#[from] secretrs::ErrorReport),
+    CosmRs(#[from] cosmrs::ErrorReport),
     #[error("Broadcast error - check tx failed: {0}")]
     BroadcastTxCheck(String),
     #[error("Broadcast error - deliver tx failed: {0}")]

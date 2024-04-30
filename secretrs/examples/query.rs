@@ -1,7 +1,11 @@
 use color_eyre::{eyre::OptionExt, owo_colors::OwoColorize, Result};
-use secretrs::{proto, AuthQueryClient, BankQueryClient, ComputeQueryClient};
-use tonic::IntoRequest;
 
+use secretrs::{
+    clients::{AuthQueryClient, BankQueryClient, ComputeQueryClient, GrpcClient, TxServiceClient},
+    proto,
+};
+
+// const GRPC_URL: &str = "http://localhost:9090";
 const GRPC_URL: &str = "http://grpc.testnet.secretsaturn.net:9090";
 const TEST_ADDRESS: &str = "secret1ap26qrlp8mcq2pg6r47w43l0y8zkqm8a450s03";
 
@@ -26,7 +30,7 @@ async fn async_main() -> Result<()> {
     };
     println!("Request => {:?}", request.green());
 
-    let response = secret_auth.account(request.into_request()).await?;
+    let response = secret_auth.account(request).await?;
 
     let (metadata, response, _extensions) = response.into_parts();
     println!("Response => {:?}", response.green());
@@ -69,7 +73,7 @@ async fn async_main() -> Result<()> {
     };
     println!("Request => {:?}", request.green());
 
-    let response = secret_bank.balance(request.into_request()).await?;
+    let response = secret_bank.balance(request).await?;
 
     let (metadata, response, _extensions) = response.into_parts();
 
@@ -96,12 +100,24 @@ async fn async_main() -> Result<()> {
     let request = proto::secret::compute::v1beta1::QueryByCodeIdRequest { code_id: 1 };
     println!("Request => {:?}", request.green());
 
-    let response = secret_compute
-        .code_hash_by_code_id(request.into_request())
-        .await?;
+    let response = secret_compute.code_hash_by_code_id(request).await?;
 
     let response = response.into_inner();
     println!("Response => {:?}", response.green());
+
+    // Tx Search
+    println!("\n{}", "Tx Search".underline().blue());
+    println!("Creating `tx` service client...");
+
+    use secretrs::tendermint::Hash;
+    use secretrs::Tx;
+
+    let mut tx_client = TxServiceClient::connect(GRPC_URL).await?;
+    let tx_hash = Hash::try_from(hex::decode(
+        "00CA925FBE9E424480DCA762F87F3C6DB94F0D17118C09D96C21FA5D1CCD28A3",
+    )?)?;
+    let tx = Tx::grpc_find_by_hash(&mut tx_client, tx_hash).await?;
+    println!("Tx => {:?}", tx.purple());
 
     Ok(())
 }
@@ -112,6 +128,7 @@ fn main() -> Result<()> {
     // Create a new Tokio runtime using the current thread scheduler
     let rt = tokio::runtime::Builder::new_current_thread()
         .enable_io()
+        .enable_time()
         .build()
         .unwrap();
 

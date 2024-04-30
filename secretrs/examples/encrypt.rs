@@ -1,9 +1,7 @@
 use color_eyre::Result;
 use serde::{Deserialize, Serialize};
 
-const CODE_HASH: &str = "9a00ca4ad505e9be7e6e6dddf8d939b7ec7e9ac8e109c8681f10db9cacb36d42";
-const TESTNET_ENCLAVE_KEY: &str =
-    "e24a22b31e3d34e0e00bcd32189548f1ccbdc9cda8f5a266219b908582b6f03f";
+use secretrs::utils::EncryptionUtils;
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -13,18 +11,20 @@ pub enum QueryMsg {
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<()> {
+    let code_hash = "9a00ca4ad505e9be7e6e6dddf8d939b7ec7e9ac8e109c8681f10db9cacb36d42";
     let query = QueryMsg::TokenInfo {};
-    let account = secretrs::utils::Account::random();
 
-    let (_nonce, encrypted) =
-        secretrs::utils::encrypt_msg(&query, CODE_HASH, &account, TESTNET_ENCLAVE_KEY).await?;
+    let encryption_utils = EncryptionUtils::new(None, "pulsar-3")?;
+    let encrypted = encryption_utils.encrypt(code_hash, &query)?;
+    let nonce = encrypted.nonce();
+    let query = encrypted.into_inner();
 
-    println!("{}", hex::encode(&encrypted));
+    println!("Encrypted query: {}", hex::encode(&query));
 
     // Use this to decrypt responses from the enclave:
-    //
-    // let decrypter = secret_utils::decrypter(&nonce, &account, TESTNET_ENCLAVE_KEY).await?;
-    // let decrypted_bytes = decrypter.decrypt(&response.data)?;
+
+    let decrypted_bytes = encryption_utils.decrypt(&nonce, &query)?;
+    println!("Decrypted query: {}", String::from_utf8(decrypted_bytes)?);
 
     Ok(())
 }

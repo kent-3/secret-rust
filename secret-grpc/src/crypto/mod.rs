@@ -94,9 +94,7 @@ fn generate_nonce() -> Nonce {
 
 fn encryption_key(secret: &Key, public: &Key, nonce: &Nonce) -> Result<Key, CryptoError> {
     let secret = x25519_dalek::StaticSecret::from(*secret);
-
     let public = x25519_dalek::PublicKey::from(*public);
-
     let shared = secret.diffie_hellman(&public);
 
     let ikm = &[shared.as_bytes(), nonce.as_slice()].concat();
@@ -109,6 +107,7 @@ fn encryption_key(secret: &Key, public: &Key, nonce: &Nonce) -> Result<Key, Cryp
     Ok(key)
 }
 
+// TODO - this could panic. impl TryFrom or something
 pub fn clone_into_key(slice: &[u8]) -> Key {
     let mut key = Default::default();
     Key::as_mut(&mut key).clone_from_slice(slice);
