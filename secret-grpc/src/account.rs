@@ -51,6 +51,7 @@ impl Account {
         Addr::unchecked(self.id().as_ref())
     }
 
+    #[allow(unused)]
     pub(crate) fn signing_key(&self) -> SigningKey {
         SigningKey::from(&self.prvk)
     }

@@ -1,6 +1,10 @@
+#![allow(unused)]
+
 use std::{collections::HashMap, str::FromStr};
 
 use cosmrs::AccountId;
+
+use crate::consts::CHAIN_PREFIX;
 
 #[derive(Debug, thiserror::Error)]
 pub enum ParseError {
@@ -73,7 +77,7 @@ impl TryFrom<Vec<u8>> for ContractInit {
 
     fn try_from(value: Vec<u8>) -> Result<Self, Self::Error> {
         fn parse(value: &[u8]) -> Result<ContractInit, ParseContractInitError> {
-            let id = AccountId::new(crate::consts::CHAIN_PREFIX, value)?;
+            let id = AccountId::new(CHAIN_PREFIX, value)?;
             Ok(ContractInit(id))
         }
         parse(&value).map_err(Self::Error::from)
@@ -185,7 +189,7 @@ impl<T> TxResponse<T> {
         }
     }
 
-    pub(crate) fn try_map<U, E, F>(self, f: F) -> crate::Result<TxResponse<U>>
+    pub(crate) fn try_map<U, E, F>(self, f: F) -> crate::error::Result<TxResponse<U>>
     where
         crate::error::Error: From<E>,
         F: FnOnce(T) -> Result<U, E>,
