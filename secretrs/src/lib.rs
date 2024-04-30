@@ -15,14 +15,6 @@ pub mod clients;
 
 pub mod utils;
 
-// TODO - this really belongs in a separate crate
-// #[cfg(feature = "dev")]
-// pub mod dev;
-
-// Experimental
-pub mod incubator;
-
-pub use crate::incubator::{account, Wallet};
 pub use crate::utils::EncryptionUtils;
 
 pub use secret_sdk_proto::{self as proto, SECRET_VERSION};

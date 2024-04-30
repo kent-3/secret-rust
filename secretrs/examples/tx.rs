@@ -1,6 +1,7 @@
 // #![allow(unused)]
 
 use color_eyre::{owo_colors::OwoColorize, Result};
+use cosmrs::crypto::secp256k1::SigningKey;
 use tokio::time::{sleep, Duration};
 
 use secretrs::proto::cosmos::tx::v1beta1::BroadcastTxRequest;
@@ -32,9 +33,11 @@ async fn async_main() -> Result<()> {
 
     let mut tx_client = TxServiceClient::connect(GRPC_URL).await?;
 
-    let account = secretrs::account::a();
+    // let account = secretrs::account::a();
+    // let sender_private_key = account.signing_key();
 
-    let sender_private_key = account.signing_key();
+    // TODO - fund this wallet
+    let sender_private_key = SigningKey::random();
     let sender_public_key = sender_private_key.public_key();
     let sender_account_id = sender_public_key.account_id("secret")?;
 
