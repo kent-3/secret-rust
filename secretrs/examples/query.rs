@@ -1,10 +1,9 @@
 use color_eyre::{eyre::OptionExt, owo_colors::OwoColorize, Result};
+
 use secretrs::{
-    clients::{AuthQueryClient, BankQueryClient, ComputeQueryClient, TxServiceClient},
-    grpc::GrpcClient,
+    clients::{AuthQueryClient, BankQueryClient, ComputeQueryClient, GrpcClient, TxServiceClient},
     proto,
 };
-use tonic::IntoRequest;
 
 // const GRPC_URL: &str = "http://localhost:9090";
 const GRPC_URL: &str = "http://grpc.testnet.secretsaturn.net:9090";
@@ -31,7 +30,7 @@ async fn async_main() -> Result<()> {
     };
     println!("Request => {:?}", request.green());
 
-    let response = secret_auth.account(request.into_request()).await?;
+    let response = secret_auth.account(request).await?;
 
     let (metadata, response, _extensions) = response.into_parts();
     println!("Response => {:?}", response.green());
@@ -74,7 +73,7 @@ async fn async_main() -> Result<()> {
     };
     println!("Request => {:?}", request.green());
 
-    let response = secret_bank.balance(request.into_request()).await?;
+    let response = secret_bank.balance(request).await?;
 
     let (metadata, response, _extensions) = response.into_parts();
 
@@ -101,9 +100,7 @@ async fn async_main() -> Result<()> {
     let request = proto::secret::compute::v1beta1::QueryByCodeIdRequest { code_id: 1 };
     println!("Request => {:?}", request.green());
 
-    let response = secret_compute
-        .code_hash_by_code_id(request.into_request())
-        .await?;
+    let response = secret_compute.code_hash_by_code_id(request).await?;
 
     let response = response.into_inner();
     println!("Response => {:?}", response.green());

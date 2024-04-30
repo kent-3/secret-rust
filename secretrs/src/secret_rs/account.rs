@@ -4,7 +4,7 @@ use cosmrs::{
 };
 use cosmwasm_std::Addr;
 
-use super::consts;
+pub type Wallet = Account;
 
 #[derive(Clone)]
 pub struct Account {
@@ -20,7 +20,7 @@ impl Account {
     }
 
     pub fn from_seed(seed: [u8; 64]) -> Account {
-        let path = consts::SCRT_DERIVATION_PATH
+        let path = "m/44'/529'/0'/0/0"
             .parse()
             .expect("invalid scrt derivation path");
         let prvk =
@@ -35,7 +35,7 @@ impl Account {
         let mut rng = nanorand::rand::ChaCha8::new();
         rng.fill_bytes(&mut seed);
 
-        let path = consts::SCRT_DERIVATION_PATH
+        let path = "m/44'/529'/0'/0/0"
             .parse()
             .expect("invalid scrt derivation path");
         let prvk =
@@ -49,13 +49,14 @@ impl Account {
     }
 
     #[allow(unused)]
-    pub(crate) fn signing_key(&self) -> SigningKey {
+    // TODO - change this back to pub(crate) later
+    pub fn signing_key(&self) -> SigningKey {
         SigningKey::from(&self.prvk)
     }
 
     pub(crate) fn id(&self) -> AccountId {
         self.pubk
-            .account_id(consts::CHAIN_PREFIX)
+            .account_id("secret")
             .expect("invalid public key type")
     }
 

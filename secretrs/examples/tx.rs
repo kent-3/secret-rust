@@ -1,22 +1,23 @@
-#![allow(unused)]
-
-use std::time::Duration;
+// #![allow(unused)]
 
 use color_eyre::{owo_colors::OwoColorize, Result};
+use tokio::time::{sleep, Duration};
 
-use proto::cosmos::tx::v1beta1::BroadcastTxRequest;
-use secretrs::tendermint::Hash;
-use secretrs::tx::{Body, Msg, Raw, Tx};
-use secretrs::{clients::TxServiceClient, grpc::GrpcClient, proto};
-use tokio::time::sleep;
+use secretrs::proto::cosmos::tx::v1beta1::BroadcastTxRequest;
+use secretrs::{
+    bank::MsgSend,
+    clients::{GrpcClient, TxServiceClient},
+    query::PageRequest,
+    tendermint::Hash,
+    tx::{self, Fee, Msg, SignDoc, SignerInfo, Tx},
+    AccountId, Coin,
+};
 
 // const GRPC_URL: &str = "http://grpc.testnet.secretsaturn.net:9090";
 const GRPC_URL: &str = "http://localhost:9090";
-const TEST_ADDRESS: &str = "secret1ap26qrlp8mcq2pg6r47w43l0y8zkqm8a450s03";
 
 async fn async_main() -> Result<()> {
     // A single item page used throughout for brevity
-    use proto::cosmos::base::query::v1beta1::PageRequest;
     let _one_page = Some(PageRequest {
         key: vec![],
         offset: 0,
@@ -25,18 +26,11 @@ async fn async_main() -> Result<()> {
         reverse: false,
     });
 
-    // Tx Broadcase
+    // Tx Broadcast
     println!("\n{}", "Tx Service".underline().blue());
     println!("Creating `tx` service client...");
 
     let mut tx_client = TxServiceClient::connect(GRPC_URL).await?;
-
-    use cosmrs::{
-        bank::MsgSend,
-        crypto::secp256k1,
-        tx::{self, Fee, Msg, SignDoc, SignerInfo, Tx},
-        AccountId, Coin,
-    };
 
     let account = secretrs::account::a();
 
