@@ -67,3 +67,27 @@ impl GrpcClient for Tx {
             .and_then(TryInto::try_into)
     }
 }
+
+#[cfg(target_arch = "wasm32")]
+#[cfg(test)]
+mod test {
+    use wasm_bindgen_test::*;
+
+    wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
+
+    #[wasm_bindgen_test]
+    async fn client_works_in_browser() {
+        use crate::clients::AuthQueryClient;
+        use crate::proto::cosmos::auth::v1beta1::QueryParamsRequest;
+        use ::tonic_web_wasm_client::Client;
+
+        const GRPC_WEB_URL: &str = "http://localhost:9091";
+
+        let mut secret_auth = AuthQueryClient::new(Client::new(GRPC_WEB_URL.to_string()));
+        let request = QueryParamsRequest {};
+        let response = secret_auth.params(request).await.expect("response");
+
+        let (metadata, response, _extensions) = response.into_parts();
+        println!("Response => {:?}", response);
+    }
+}
