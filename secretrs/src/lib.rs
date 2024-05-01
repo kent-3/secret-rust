@@ -1,11 +1,10 @@
-//! ## Re-exports
-//!
-//! SecretRS re-exports the following crates for easy access:
-//!
-//! - `cosmrs`: re-exported as `secretrs`
-//! - `secret-sdk-proto`: re-exported as `secretrs::proto`
+#![doc = include_str!("../README.md")]
 
-// This allows `secretrs` to act like a drop-in replacement for `cosmrs`.
+//! # SecretRS -
+//!
+//! SecretRS re-exports `cosmrs` at the top-level of the crate.
+//! This allows `secretrs` to be used as a drop-in replacement for `cosmrs`.
+
 pub use cosmrs::*;
 
 pub mod compute;
