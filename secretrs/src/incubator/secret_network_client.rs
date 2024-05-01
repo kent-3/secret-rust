@@ -1,5 +1,95 @@
 #![allow(unused)]
 
+use cosmrs::{AccountId, Coin};
+use secret_sdk_proto::cosmos::tx::v1beta1::{BroadcastTxRequest, BroadcastTxResponse};
+use tonic::client::GrpcService;
+
+use crate::clients::*;
+
+const GRPC_URL: &str = "http://localhost:9090";
+
+#[derive(Debug)]
+pub struct SecretNetworkClient<T> {
+    pub query: SecretNetworkQueryClient<T>,
+    pub tx: SecretNetworkTxClient<T>,
+}
+
+#[derive(Debug)]
+pub struct SecretNetworkTxClient<T> {
+    pub bank: BankMsgClient<T>,
+    pub compute: ComputeMsgClient<T>,
+    tx: TxServiceClient<T>,
+}
+
+#[derive(Debug)]
+pub struct SecretNetworkQueryClient<T> {
+    pub auth: AuthQueryClient<T>,
+    pub bank: BankQueryClient<T>,
+    pub compute: ComputeQueryClient<T>,
+}
+
+#[derive(Debug)]
+pub struct BankMsgClient<T> {
+    inner: TxServiceClient<T>,
+}
+
+impl BankMsgClient<::tonic::transport::Channel> {
+    pub async fn new() -> Self {
+        let tx_client = TxServiceClient::connect(GRPC_URL).await.unwrap();
+        Self { inner: tx_client }
+    }
+}
+
+impl BankMsgClient<::tonic_web_wasm_client::Client> {
+    pub fn new() -> Self {
+        let web_wasm_client = ::tonic_web_wasm_client::Client::new(GRPC_URL.to_string());
+        let tx_client = TxServiceClient::new(web_wasm_client);
+        Self { inner: tx_client }
+    }
+}
+
+impl<T> BankMsgClient<T>
+where
+    T:,
+{
+    // I suppose I can take as input the MsgSend object and a TxOptions object
+    pub fn send(&mut self, from_address: AccountId, to_address: AccountId, amount: Vec<Coin>) {
+        use ::cosmrs::bank::MsgSend;
+
+        let msg = MsgSend {
+            from_address,
+            to_address,
+            amount,
+        };
+
+        let request = BroadcastTxRequest {
+            tx_bytes: vec![],
+            mode: 2,
+        };
+
+        todo!()
+
+        // self.perform(request);
+    }
+}
+
+/*
+*
+* I would need to add some kind of trait bound like this one from `tendermint-rs::rpc::client`:
+*
+* /// Perform a request against the RPC endpoint.
+* ///
+* /// This method is used by the default implementations of specific endpoint methods.
+* async fn perform<R>(&self, request: R) -> Result<R::Output, Error>
+* where
+*     R: SimpleRequest;
+*/
+
+#[derive(Debug)]
+pub struct ComputeMsgClient<T> {
+    inner: TxServiceClient<T>,
+}
+
 /// Options for transactions
 #[derive(Debug)]
 pub struct TxOptions {
