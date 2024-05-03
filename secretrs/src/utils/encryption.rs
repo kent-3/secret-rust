@@ -51,6 +51,7 @@ const MAINNET_IO_PUBKEY: [u8; 32] =
 const HKDF_SALT: [u8; 32] =
     hex!("000000000000000000024bead8df69990852c202db0e0097c1a12ea637d7e96d");
 
+#[derive(Clone)]
 pub struct EncryptionUtils {
     seed: [u8; 32],
     privkey: StaticSecret,

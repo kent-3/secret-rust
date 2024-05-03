@@ -1,93 +1,61 @@
 #![allow(unused)]
 
-use cosmrs::{AccountId, Coin};
-use secret_sdk_proto::cosmos::tx::v1beta1::{BroadcastTxRequest, BroadcastTxResponse};
-use tonic::client::GrpcService;
+use tonic::codegen::{Body, Bytes, StdError};
 
-use crate::clients::*;
+use super::{Error, Result};
+use crate::{
+    incubator::{query::Querier, tx::TxSender},
+    EncryptionUtils,
+};
 
-const GRPC_URL: &str = "http://localhost:9090";
-
-#[derive(Debug)]
-pub struct SecretNetworkClient<T> {
-    pub query: SecretNetworkQueryClient<T>,
-    pub tx: SecretNetworkTxClient<T>,
-}
-
-#[derive(Debug)]
-pub struct SecretNetworkTxClient<T> {
-    pub bank: BankMsgClient<T>,
-    pub compute: ComputeMsgClient<T>,
-    tx: TxServiceClient<T>,
-}
-
-#[derive(Debug)]
-pub struct SecretNetworkQueryClient<T> {
-    pub auth: AuthQueryClient<T>,
-    pub bank: BankQueryClient<T>,
-    pub compute: ComputeQueryClient<T>,
-}
-
-#[derive(Debug)]
-pub struct BankMsgClient<T> {
-    inner: TxServiceClient<T>,
-}
-
-impl BankMsgClient<::tonic::transport::Channel> {
-    pub async fn new() -> Self {
-        let tx_client = TxServiceClient::connect(GRPC_URL).await.unwrap();
-        Self { inner: tx_client }
-    }
-}
-
-impl BankMsgClient<::tonic_web_wasm_client::Client> {
-    pub fn new() -> Self {
-        let web_wasm_client = ::tonic_web_wasm_client::Client::new(GRPC_URL.to_string());
-        let tx_client = TxServiceClient::new(web_wasm_client);
-        Self { inner: tx_client }
-    }
-}
-
-impl<T> BankMsgClient<T>
+#[derive(Debug, Clone)]
+pub struct SecretNetworkClient<T>
 where
-    T:,
+    T: tonic::client::GrpcService<tonic::body::BoxBody>,
+    T::Error: Into<StdError>,
+    T::ResponseBody: Body<Data = Bytes> + Send + 'static,
+    <T::ResponseBody as Body>::Error: Into<StdError> + Send,
+    T: Clone,
 {
-    // I suppose I can take as input the MsgSend object and a TxOptions object
-    pub fn send(&mut self, from_address: AccountId, to_address: AccountId, amount: Vec<Coin>) {
-        use ::cosmrs::bank::MsgSend;
+    pub query: Querier<T>,
+    pub tx: TxSender<T>,
+}
 
-        let msg = MsgSend {
-            from_address,
-            to_address,
-            amount,
-        };
+#[cfg(not(target_arch = "wasm32"))]
+impl SecretNetworkClient<::tonic::transport::Channel> {
+    pub async fn new(options: CreateClientOptions) -> Result<Self> {
+        let channel = ::tonic::transport::Channel::from_static(options.url)
+            .connect()
+            .await?;
+        let query = Querier::new(channel.clone()).await?;
+        let tx = TxSender::new(channel.clone()).await?;
 
-        let request = BroadcastTxRequest {
-            tx_bytes: vec![],
-            mode: 2,
-        };
-
-        todo!()
-
-        // self.perform(request);
+        Ok(Self { query, tx })
     }
 }
 
-/*
-*
-* I would need to add some kind of trait bound like this one from `tendermint-rs::rpc::client`:
-*
-* /// Perform a request against the RPC endpoint.
-* ///
-* /// This method is used by the default implementations of specific endpoint methods.
-* async fn perform<R>(&self, request: R) -> Result<R::Output, Error>
-* where
-*     R: SimpleRequest;
-*/
+/// Options to configure the creation of a client.
+pub struct CreateClientOptions {
+    /// A URL to the API service, also known as LCD, REST API or gRPC-gateway, typically on port 1317.
+    pub url: &'static str,
+    /// The chain-id used in encryption code & when signing transactions.
+    pub chain_id: &'static str,
+    /// An optional wallet for signing transactions & permits. If `wallet` is supplied,
+    /// `wallet_address` & `chain_id` must also be supplied.
+    pub wallet: Option<Box<dyn Signer>>,
+    /// The specific account address in the wallet that is permitted to sign transactions & permits.
+    pub wallet_address: Option<String>,
+    /// Optional encryption seed that will allow transaction decryption at a later time.
+    /// Ignored if `encryption_utils` is supplied. Must be 32 bytes.
+    pub encryption_seed: Option<Vec<u8>>,
+    /// Optional field to override the default encryption utilities implementation.
+    pub encryption_utils: Option<EncryptionUtils>,
+}
 
-#[derive(Debug)]
-pub struct ComputeMsgClient<T> {
-    inner: TxServiceClient<T>,
+/// A signer capable of signing transactions.
+/// Placeholder for actual implementation details.
+pub trait Signer {
+    // Define methods relevant to the Signer trait here
 }
 
 /// Options for transactions
@@ -141,6 +109,16 @@ pub enum BroadcastMode {
     Block,
     Sync,
     Async,
+}
+
+impl Into<i32> for BroadcastMode {
+    fn into(self) -> i32 {
+        match self {
+            block => 1,
+            sync => 2,
+            r#async => 3,
+        }
+    }
 }
 
 /// Signer data for overriding chain-specific data
