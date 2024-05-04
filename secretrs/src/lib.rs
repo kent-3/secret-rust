@@ -19,9 +19,8 @@ pub mod utils;
 // pub mod dev;
 
 // Experimental
-pub mod incubator;
+pub mod client;
 
-pub use crate::incubator::{account, Wallet};
 pub use crate::utils::EncryptionUtils;
 
 pub use secret_sdk_proto::{self as proto, SECRET_VERSION};

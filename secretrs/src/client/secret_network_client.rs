@@ -1,12 +1,13 @@
 #![allow(unused)]
 
-use tonic::codegen::{Body, Bytes, StdError};
-
 use super::{Error, Result};
 use crate::{
-    incubator::{query::Querier, tx::TxSender},
+    client::{query::Querier, tx::TxSender},
+    proto::cosmos::tx::v1beta1::{AuthInfo, BroadcastMode, SignDoc, SignerInfo, Tx, TxBody, TxRaw},
     EncryptionUtils,
 };
+use std::sync::Arc;
+use tonic::codegen::{Body, Bytes, StdError};
 
 #[derive(Debug, Clone)]
 pub struct SecretNetworkClient<T>
@@ -17,24 +18,59 @@ where
     <T::ResponseBody as Body>::Error: Into<StdError> + Send,
     T: Clone,
 {
+    pub url: &'static str,
     pub query: Querier<T>,
     pub tx: TxSender<T>,
+    // TODO - figure out this wallet business
+    pub wallet: Option<Wallet>,
+    pub address: String,
+    pub chain_id: &'static str,
+    pub encryption_utils: EncryptionUtils,
+    // TODO - is this worth doing?
+    // tx_options: Arc<TxOptions>,
 }
 
 #[cfg(not(target_arch = "wasm32"))]
 impl SecretNetworkClient<::tonic::transport::Channel> {
-    pub async fn new(options: CreateClientOptions) -> Result<Self> {
-        let channel = ::tonic::transport::Channel::from_static(options.url)
+    pub async fn connect(options: CreateClientOptions) -> Result<Self> {
+        let channel = tonic::transport::Channel::from_static(options.url)
             .connect()
             .await?;
-        let query = Querier::new(channel.clone()).await?;
-        let tx = TxSender::new(channel.clone()).await?;
-
-        Ok(Self { query, tx })
+        Ok(Self::new(channel, options)?)
     }
+
+    pub fn new(channel: ::tonic::transport::Channel, options: CreateClientOptions) -> Result<Self> {
+        let url = options.url;
+
+        let query = Querier::new(channel.clone(), &options);
+        let tx = TxSender::new(channel.clone(), &options);
+        // let tx_options = Arc::new(TxOptions::default());
+
+        let wallet = options.wallet;
+        let address = options.wallet_address.unwrap_or_default();
+        let chain_id = options.chain_id;
+
+        let encryption_utils = EncryptionUtils::new(options.encryption_seed, options.chain_id)?;
+
+        Ok(Self {
+            url,
+            query,
+            tx,
+            wallet,
+            address,
+            chain_id,
+            encryption_utils, // tx_options,
+        })
+    }
+
+    // pub fn tx_options(&mut self, options: TxOptions) -> &mut Self {
+    //     self.tx_options = Arc::new(options);
+    //     self
+    // }
 }
 
 /// Options to configure the creation of a client.
+#[derive(Debug)]
 pub struct CreateClientOptions {
     /// A URL to the API service, also known as LCD, REST API or gRPC-gateway, typically on port 1317.
     pub url: &'static str,
@@ -42,26 +78,50 @@ pub struct CreateClientOptions {
     pub chain_id: &'static str,
     /// An optional wallet for signing transactions & permits. If `wallet` is supplied,
     /// `wallet_address` & `chain_id` must also be supplied.
-    pub wallet: Option<Box<dyn Signer>>,
+    pub wallet: Option<Wallet>,
     /// The specific account address in the wallet that is permitted to sign transactions & permits.
     pub wallet_address: Option<String>,
     /// Optional encryption seed that will allow transaction decryption at a later time.
     /// Ignored if `encryption_utils` is supplied. Must be 32 bytes.
-    pub encryption_seed: Option<Vec<u8>>,
+    pub encryption_seed: Option<[u8; 32]>,
     /// Optional field to override the default encryption utilities implementation.
     pub encryption_utils: Option<EncryptionUtils>,
 }
 
+impl Default for CreateClientOptions {
+    fn default() -> Self {
+        Self {
+            url: "http://localhost:9090",
+            chain_id: "secretdev-1",
+            wallet: None,
+            wallet_address: None,
+            encryption_seed: None,
+            encryption_utils: None,
+        }
+    }
+}
+
+impl CreateClientOptions {
+    pub fn read_only(url: &'static str, chain_id: &'static str) -> Self {
+        Self {
+            url,
+            chain_id,
+            ..Default::default()
+        }
+    }
+}
+
 /// A signer capable of signing transactions.
 /// Placeholder for actual implementation details.
-pub trait Signer {
+#[derive(Debug, Clone)]
+pub struct Wallet {
     // Define methods relevant to the Signer trait here
 }
 
 /// Options for transactions
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TxOptions {
-    /// Gas limit for the transaction, defaults to `25_000`
+    /// Gas limit for the transaction, defaults to `50_000`
     pub gas_limit: u32,
     /// Gas price in fee denomination, defaults to `0.1`
     pub gas_price_in_fee_denom: f32,
@@ -82,13 +142,13 @@ pub struct TxOptions {
     /// Optional explicit signer data
     pub explicit_signer_data: Option<SignerData>,
     /// Options for resolving IBC ack/timeout transactions
-    pub ibc_txs_options: IbcTxOptions,
+    pub ibc_txs_options: Option<IbcTxOptions>,
 }
 
 impl Default for TxOptions {
     fn default() -> Self {
         Self {
-            gas_limit: 25_000,
+            gas_limit: 50_000,
             gas_price_in_fee_denom: 0.1,
             fee_denom: "uscrt".to_string(),
             fee_granter: None,
@@ -98,31 +158,13 @@ impl Default for TxOptions {
             broadcast_check_interval_ms: 6_000,
             broadcast_mode: BroadcastMode::Sync,
             explicit_signer_data: None,
-            ibc_txs_options: IbcTxOptions::default(),
-        }
-    }
-}
-
-/// Modes of broadcasting transactions
-#[derive(Debug)]
-pub enum BroadcastMode {
-    Block,
-    Sync,
-    Async,
-}
-
-impl Into<i32> for BroadcastMode {
-    fn into(self) -> i32 {
-        match self {
-            block => 1,
-            sync => 2,
-            r#async => 3,
+            ibc_txs_options: Some(IbcTxOptions::default()),
         }
     }
 }
 
 /// Signer data for overriding chain-specific data
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SignerData {
     pub account_number: u32,
     pub account_sequence: u32,
@@ -130,7 +172,7 @@ pub struct SignerData {
 }
 
 /// Options related to IBC transactions
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IbcTxOptions {
     /// If `false`, skip resolving the IBC response txs (acknowledge/timeout).
     ///

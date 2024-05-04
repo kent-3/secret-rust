@@ -1,35 +1,32 @@
 #![allow(unused)]
 
-use cosmrs::bank::MsgSend;
-use secretrs::clients::TxServiceClient;
-use secretrs::incubator::{CreateClientOptions, Result, SecretNetworkClient, TxOptions};
-use secretrs::proto::cosmos::auth::v1beta1::QueryParamsRequest;
+use secretrs::{
+    bank::MsgSend,
+    client::{CreateClientOptions, Result, SecretNetworkClient, TxOptions},
+};
 
 const GRPC_URL: &str = "http://grpc.testnet.secretsaturn.net:9090";
 const CHAIN_ID: &str = "pulsar-3";
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<()> {
-    let opt = CreateClientOptions {
+    let options = CreateClientOptions {
         url: GRPC_URL,
         chain_id: CHAIN_ID,
-        wallet: None,
-        wallet_address: None,
-        encryption_seed: None,
-        encryption_utils: None,
+        ..Default::default()
     };
-    let mut secretrs = SecretNetworkClient::new(opt).await?;
+    let mut secretrs = SecretNetworkClient::connect(options).await?;
     println!("{:#?}", secretrs);
 
     let foo = secretrs.query.auth.params().await?;
     println!("{:?}", foo);
 
-    let msg = MsgSend {
-        from_address: "foo".parse()?,
-        to_address: "bar".parse()?,
-        amount: vec![],
-    };
-    let foo = secretrs.tx.broadcast(vec![msg]);
+    // let msg = MsgSend {
+    //     from_address: "foo".parse()?,
+    //     to_address: "bar".parse()?,
+    //     amount: vec![],
+    // };
+    // let foo = secretrs.tx.bank.send(msg, TxOptions::default());
 
     // let mut secretrs_tx = TxSender::new(GRPC_URL).await?;
     // println!("{:#?}", secretrs_tx);

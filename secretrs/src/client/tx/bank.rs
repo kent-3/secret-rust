@@ -1,17 +1,16 @@
 #![allow(unused)]
 
+use super::{Error, Result, TxOptions};
 use crate::{
-    clients::TxServiceClient,
-    incubator::{secret_network_client::TxOptions, Error, Result, GRPC_URL},
-};
-use cosmrs::{
     bank::{MsgMultiSend, MsgSend},
+    clients::TxServiceClient,
+    proto::cosmos::{
+        base::abci::v1beta1::TxResponse,
+        tx::v1beta1::{BroadcastTxRequest, BroadcastTxResponse},
+    },
     tx::{BodyBuilder, Msg, Raw, SignDoc, Tx},
 };
-use secret_sdk_proto::cosmos::{
-    base::abci::v1beta1::TxResponse,
-    tx::v1beta1::{BroadcastTxRequest, BroadcastTxResponse},
-};
+use std::sync::Arc;
 use tonic::codegen::{Body, Bytes, StdError};
 
 #[derive(Debug, Clone)]
@@ -29,16 +28,16 @@ where
 #[cfg(not(target_arch = "wasm32"))]
 impl BankServiceClient<::tonic::transport::Channel> {
     pub fn new(channel: ::tonic::transport::Channel) -> Self {
-        let tx = TxServiceClient::new(channel);
-        Self { inner: tx }
+        let inner = TxServiceClient::new(channel);
+        Self { inner }
     }
 }
 
 #[cfg(target_arch = "wasm32")]
 impl BankServiceClient<::tonic_web_wasm_client::Client> {
     pub fn new(client: ::tonic_web_wasm_client::Client) -> Self {
-        let tx = TxServiceClient::<::tonic_web_wasm_client::Client>::new(client);
-        Self { inner: tx }
+        let inner = TxServiceClient::new(client);
+        Self { inner }
     }
 }
 

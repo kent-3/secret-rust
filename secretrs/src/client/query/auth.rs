@@ -1,11 +1,13 @@
-use cosmrs::proto::cosmos::auth::v1beta1::{Params, QueryParamsRequest, QueryParamsResponse};
+use crate::client::CreateClientOptions;
+use std::sync::Arc;
+use std::sync::Weak;
 
-use tonic::codegen::*;
-use tonic::{Request, Response, Status};
-
-use crate::clients::AuthQueryClient;
-use crate::incubator::Error;
-use crate::incubator::Result;
+use super::{Error, Result};
+use crate::{
+    clients::AuthQueryClient,
+    proto::cosmos::auth::v1beta1::{Params, QueryParamsRequest, QueryParamsResponse},
+};
+use tonic::codegen::{Body, Bytes, StdError};
 
 #[derive(Debug, Clone)]
 pub struct AuthQuerier<T> {
@@ -27,6 +29,8 @@ impl AuthQuerier<::tonic_web_wasm_client::Client> {
         Self { inner: auth }
     }
 }
+
+// TODO - add ability to set headers of the request (especially 'x-cosmos-block-height')
 
 impl<T> AuthQuerier<T>
 where

@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use derive_more::From;
 use hex_literal::hex;
 use nanorand::rand::Rng;
@@ -57,6 +59,19 @@ pub struct EncryptionUtils {
     privkey: StaticSecret,
     pubkey: PublicKey,
     consensus_io_pubkey: [u8; 32],
+}
+
+use std::fmt;
+
+impl fmt::Debug for EncryptionUtils {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("EncryptionUtils")
+            .field("seed", &self.seed)
+            .field("privkey", &"[REDACTED]")
+            .field("pubkey", &self.pubkey)
+            .field("consensus_io_pubkey", &self.consensus_io_pubkey)
+            .finish()
+    }
 }
 
 impl EncryptionUtils {
