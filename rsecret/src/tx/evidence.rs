@@ -1,11 +1,12 @@
 // #![allow(unused)]
 
-use super::{Error, Result, TxOptions};
-use crate::{
+use super::{Error, Result};
+use crate::TxOptions;
+use secretrs::{
     clients::TxServiceClient,
     proto::cosmos::{
         base::abci::v1beta1::TxResponse,
-        feegrant::v1beta1::{MsgGrantAllowance, MsgRevokeAllowance},
+        evidence::v1beta1::MsgSubmitEvidence,
         tx::v1beta1::{BroadcastTxRequest, BroadcastTxResponse},
     },
     tx::{BodyBuilder, Msg, Raw, SignDoc, Tx},
@@ -14,7 +15,7 @@ use std::sync::Arc;
 use tonic::codegen::{Body, Bytes, StdError};
 
 #[derive(Debug, Clone)]
-pub struct FeegrantServiceClient<T>
+pub struct EvidenceServiceClient<T>
 where
     T: tonic::client::GrpcService<tonic::body::BoxBody>,
     T::Error: Into<StdError>,
@@ -26,7 +27,7 @@ where
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-impl FeegrantServiceClient<::tonic::transport::Channel> {
+impl EvidenceServiceClient<::tonic::transport::Channel> {
     pub fn new(channel: ::tonic::transport::Channel) -> Self {
         let inner = TxServiceClient::new(channel);
         Self { inner }
@@ -34,14 +35,14 @@ impl FeegrantServiceClient<::tonic::transport::Channel> {
 }
 
 #[cfg(target_arch = "wasm32")]
-impl FeegrantServiceClient<::tonic_web_wasm_client::Client> {
+impl EvidenceServiceClient<::tonic_web_wasm_client::Client> {
     pub fn new(client: ::tonic_web_wasm_client::Client) -> Self {
         let inner = TxServiceClient::new(client);
         Self { inner }
     }
 }
 
-impl<T> FeegrantServiceClient<T>
+impl<T> EvidenceServiceClient<T>
 where
     T: tonic::client::GrpcService<tonic::body::BoxBody>,
     T::Error: Into<StdError>,
@@ -49,17 +50,9 @@ where
     <T::ResponseBody as Body>::Error: Into<StdError> + Send,
     T: Clone,
 {
-    pub async fn grant_allowance(
+    pub async fn submit_evidence(
         &self,
-        msg: MsgGrantAllowance,
-        tx_options: TxOptions,
-    ) -> Result<TxResponse> {
-        todo!()
-    }
-
-    pub async fn revoke_allowance(
-        &self,
-        msg: MsgRevokeAllowance,
+        msg: MsgSubmitEvidence,
         tx_options: TxOptions,
     ) -> Result<TxResponse> {
         todo!()

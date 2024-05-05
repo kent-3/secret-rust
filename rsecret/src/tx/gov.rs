@@ -1,13 +1,12 @@
 // #![allow(unused)]
 
-use super::{Error, Result, TxOptions};
-use crate::{
+use super::{Error, Result};
+use crate::TxOptions;
+use secretrs::{
     clients::TxServiceClient,
     proto::cosmos::{
         base::abci::v1beta1::TxResponse,
-        staking::v1beta1::{
-            MsgBeginRedelegate, MsgCreateValidator, MsgDelegate, MsgEditValidator, MsgUndelegate,
-        },
+        gov::v1beta1::{MsgDeposit, MsgSubmitProposal, MsgVote, MsgVoteWeighted},
         tx::v1beta1::{BroadcastTxRequest, BroadcastTxResponse},
     },
     tx::{BodyBuilder, Msg, Raw, SignDoc, Tx},
@@ -16,7 +15,7 @@ use std::sync::Arc;
 use tonic::codegen::{Body, Bytes, StdError};
 
 #[derive(Debug, Clone)]
-pub struct StakingServiceClient<T>
+pub struct GovServiceClient<T>
 where
     T: tonic::client::GrpcService<tonic::body::BoxBody>,
     T::Error: Into<StdError>,
@@ -28,7 +27,7 @@ where
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-impl StakingServiceClient<::tonic::transport::Channel> {
+impl GovServiceClient<::tonic::transport::Channel> {
     pub fn new(channel: ::tonic::transport::Channel) -> Self {
         let inner = TxServiceClient::new(channel);
         Self { inner }
@@ -36,14 +35,14 @@ impl StakingServiceClient<::tonic::transport::Channel> {
 }
 
 #[cfg(target_arch = "wasm32")]
-impl StakingServiceClient<::tonic_web_wasm_client::Client> {
+impl GovServiceClient<::tonic_web_wasm_client::Client> {
     pub fn new(client: ::tonic_web_wasm_client::Client) -> Self {
         let inner = TxServiceClient::new(client);
         Self { inner }
     }
 }
 
-impl<T> StakingServiceClient<T>
+impl<T> GovServiceClient<T>
 where
     T: tonic::client::GrpcService<tonic::body::BoxBody>,
     T::Error: Into<StdError>,
@@ -51,37 +50,25 @@ where
     <T::ResponseBody as Body>::Error: Into<StdError> + Send,
     T: Clone,
 {
-    pub async fn begin_redelegate(
+    pub async fn vote(&self, msg: MsgVote, tx_options: TxOptions) -> Result<TxResponse> {
+        todo!()
+    }
+
+    pub async fn vote_weighted(
         &self,
-        msg: MsgBeginRedelegate,
+        msg: MsgVoteWeighted,
         tx_options: TxOptions,
     ) -> Result<TxResponse> {
         todo!()
     }
 
-    pub async fn create_validator(
-        &self,
-        msg: MsgCreateValidator,
-        tx_options: TxOptions,
-    ) -> Result<TxResponse> {
+    pub async fn deposit(&self, msg: MsgDeposit, tx_options: TxOptions) -> Result<TxResponse> {
         todo!()
     }
 
-    pub async fn delegate(&self, msg: MsgDelegate, tx_options: TxOptions) -> Result<TxResponse> {
-        todo!()
-    }
-
-    pub async fn edit_validator(
+    pub async fn submit_proposal(
         &self,
-        msg: MsgEditValidator,
-        tx_options: TxOptions,
-    ) -> Result<TxResponse> {
-        todo!()
-    }
-
-    pub async fn undelegate(
-        &self,
-        msg: MsgUndelegate,
+        msg: MsgSubmitProposal,
         tx_options: TxOptions,
     ) -> Result<TxResponse> {
         todo!()

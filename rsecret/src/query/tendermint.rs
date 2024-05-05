@@ -1,6 +1,6 @@
 use super::{Error, Result};
-use crate::clients::TendermintServiceClient;
-use crate::proto::cosmos::base::tendermint::v1beta1::{
+use secretrs::clients::TendermintServiceClient;
+use secretrs::proto::cosmos::base::tendermint::v1beta1::{
     AbciQueryRequest, AbciQueryResponse, GetBlockByHeightRequest, GetBlockByHeightResponse,
     GetLatestBlockRequest, GetLatestBlockResponse, GetLatestValidatorSetRequest,
     GetLatestValidatorSetResponse, GetNodeInfoRequest, GetNodeInfoResponse, GetSyncingRequest,

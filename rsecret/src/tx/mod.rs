@@ -23,12 +23,9 @@ pub use slashing::SlashingServiceClient;
 pub use staking::StakingServiceClient;
 
 use super::{Error, Result};
-use crate::proto::cosmos::tx::v1beta1::{BroadcastTxRequest, BroadcastTxResponse};
-
-use crate::{
-    client::{CreateClientOptions, TxOptions},
-    clients::TxServiceClient,
-};
+use crate::{CreateClientOptions, TxOptions};
+use secretrs::clients::TxServiceClient;
+use secretrs::proto::cosmos::tx::v1beta1::{BroadcastTxRequest, BroadcastTxResponse};
 use tonic::codegen::{Body, Bytes, StdError};
 
 #[derive(Debug, Clone)]

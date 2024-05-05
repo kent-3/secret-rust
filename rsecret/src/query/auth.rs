@@ -1,5 +1,6 @@
 use super::{Error, Result};
-use crate::{
+use secret_sdk_proto::prost::Message;
+use secretrs::{
     clients::AuthQueryClient,
     proto::cosmos::auth::v1beta1::{
         AddressBytesToStringRequest, AddressBytesToStringResponse, AddressStringToBytesRequest,
@@ -14,7 +15,6 @@ use crate::{
     query::PageRequest,
     Any,
 };
-use secret_sdk_proto::prost::Message;
 use tonic::codegen::{Body, Bytes, StdError};
 
 #[derive(Debug, Clone)]

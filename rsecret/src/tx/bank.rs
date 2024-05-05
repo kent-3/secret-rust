@@ -1,7 +1,8 @@
 // #![allow(unused)]
 
-use super::{Error, Result, TxOptions};
-use crate::{
+use super::{Error, Result};
+use crate::TxOptions;
+use secretrs::{
     bank::{MsgMultiSend, MsgSend},
     clients::TxServiceClient,
     proto::cosmos::{

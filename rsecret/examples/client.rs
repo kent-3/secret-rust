@@ -1,9 +1,6 @@
 #![allow(unused)]
 
-use secretrs::{
-    bank::MsgSend,
-    client::{CreateClientOptions, Result, SecretNetworkClient, TxOptions},
-};
+use rsecret::{CreateClientOptions, Result, SecretNetworkClient, TxOptions};
 
 const GRPC_URL: &str = "http://grpc.testnet.secretsaturn.net:9090";
 const CHAIN_ID: &str = "pulsar-3";

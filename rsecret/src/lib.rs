@@ -1,11 +1,11 @@
 // #![allow(unused)]
 
-mod account;
+// mod account;
 mod query;
 mod secret_network_client;
 mod tx;
 
-pub use account::Wallet;
+// pub use account::Wallet;
 pub use query::Querier;
 pub use secret_network_client::{CreateClientOptions, SecretNetworkClient, TxOptions};
 pub use tx::{BankServiceClient, TxSender};

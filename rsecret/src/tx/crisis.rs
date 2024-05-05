@@ -1,7 +1,8 @@
 // #![allow(unused)]
 
-use super::{Error, Result, TxOptions};
-use crate::{
+use super::{Error, Result};
+use crate::TxOptions;
+use secretrs::{
     clients::TxServiceClient,
     proto::cosmos::{
         base::abci::v1beta1::TxResponse,

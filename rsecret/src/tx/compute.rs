@@ -1,8 +1,8 @@
 #![allow(unused)]
 
-use super::{Error, Result, TxOptions};
-use crate::{
-    client::CreateClientOptions,
+use super::{Error, Result};
+use crate::{CreateClientOptions, TxOptions};
+use secretrs::{
     clients::TxServiceClient,
     compute::{MsgExecuteContract, MsgInstantiateContract, MsgStoreCode},
     proto::cosmos::{

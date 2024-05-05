@@ -1,6 +1,6 @@
 use super::{Error, Result};
-use crate::clients::TxServiceClient;
-use crate::proto::cosmos::tx::v1beta1::{
+use secretrs::clients::TxServiceClient;
+use secretrs::proto::cosmos::tx::v1beta1::{
     BroadcastTxRequest, BroadcastTxResponse, GetBlockWithTxsRequest, GetBlockWithTxsResponse,
     GetTxRequest, GetTxResponse, GetTxsEventRequest, GetTxsEventResponse, SimulateRequest,
     SimulateResponse,

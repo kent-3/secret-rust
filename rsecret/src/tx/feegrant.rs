@@ -1,14 +1,12 @@
 // #![allow(unused)]
 
-use super::{Error, Result, TxOptions};
-use crate::{
+use super::{Error, Result};
+use crate::TxOptions;
+use secretrs::{
     clients::TxServiceClient,
     proto::cosmos::{
         base::abci::v1beta1::TxResponse,
-        distribution::v1beta1::{
-            MsgFundCommunityPool, MsgSetWithdrawAddress, MsgWithdrawDelegatorReward,
-            MsgWithdrawValidatorCommission,
-        },
+        feegrant::v1beta1::{MsgGrantAllowance, MsgRevokeAllowance},
         tx::v1beta1::{BroadcastTxRequest, BroadcastTxResponse},
     },
     tx::{BodyBuilder, Msg, Raw, SignDoc, Tx},
@@ -17,7 +15,7 @@ use std::sync::Arc;
 use tonic::codegen::{Body, Bytes, StdError};
 
 #[derive(Debug, Clone)]
-pub struct DistributionServiceClient<T>
+pub struct FeegrantServiceClient<T>
 where
     T: tonic::client::GrpcService<tonic::body::BoxBody>,
     T::Error: Into<StdError>,
@@ -29,7 +27,7 @@ where
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-impl DistributionServiceClient<::tonic::transport::Channel> {
+impl FeegrantServiceClient<::tonic::transport::Channel> {
     pub fn new(channel: ::tonic::transport::Channel) -> Self {
         let inner = TxServiceClient::new(channel);
         Self { inner }
@@ -37,14 +35,14 @@ impl DistributionServiceClient<::tonic::transport::Channel> {
 }
 
 #[cfg(target_arch = "wasm32")]
-impl DistributionServiceClient<::tonic_web_wasm_client::Client> {
+impl FeegrantServiceClient<::tonic_web_wasm_client::Client> {
     pub fn new(client: ::tonic_web_wasm_client::Client) -> Self {
         let inner = TxServiceClient::new(client);
         Self { inner }
     }
 }
 
-impl<T> DistributionServiceClient<T>
+impl<T> FeegrantServiceClient<T>
 where
     T: tonic::client::GrpcService<tonic::body::BoxBody>,
     T::Error: Into<StdError>,
@@ -52,33 +50,17 @@ where
     <T::ResponseBody as Body>::Error: Into<StdError> + Send,
     T: Clone,
 {
-    pub async fn fund_community_pool(
+    pub async fn grant_allowance(
         &self,
-        msg: MsgFundCommunityPool,
+        msg: MsgGrantAllowance,
         tx_options: TxOptions,
     ) -> Result<TxResponse> {
         todo!()
     }
 
-    pub async fn set_withdraw_address(
+    pub async fn revoke_allowance(
         &self,
-        msg: MsgSetWithdrawAddress,
-        tx_options: TxOptions,
-    ) -> Result<TxResponse> {
-        todo!()
-    }
-
-    pub async fn withdraw_delegator_reward(
-        &self,
-        msg: MsgWithdrawDelegatorReward,
-        tx_options: TxOptions,
-    ) -> Result<TxResponse> {
-        todo!()
-    }
-
-    pub async fn withdraw_validator_commission(
-        &self,
-        msg: MsgWithdrawValidatorCommission,
+        msg: MsgRevokeAllowance,
         tx_options: TxOptions,
     ) -> Result<TxResponse> {
         todo!()

@@ -1,5 +1,5 @@
 use super::{Error, Result};
-use crate::{
+use secretrs::{
     clients::BankQueryClient,
     proto::cosmos::bank::v1beta1::{Params, QueryParamsRequest, QueryParamsResponse},
 };

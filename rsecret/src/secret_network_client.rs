@@ -1,8 +1,8 @@
 #![allow(unused)]
 
 use super::{Error, Result};
-use crate::{
-    client::{query::Querier, tx::TxSender},
+use crate::{query::Querier, tx::TxSender};
+use secretrs::{
     proto::cosmos::tx::v1beta1::{AuthInfo, BroadcastMode, SignDoc, SignerInfo, Tx, TxBody, TxRaw},
     EncryptionUtils,
 };

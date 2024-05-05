@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use crate::client::CreateClientOptions;
+use crate::CreateClientOptions;
 
 pub mod auth;
 pub mod bank;
