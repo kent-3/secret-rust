@@ -87,25 +87,25 @@ where
         let response: QueryModuleAccountsResponse = todo!();
 
         // convert `Any` to proto::cosmos::auth::v1beta1::ModuleAccount to cosmrs::auth::ModuleAccount
-        let accounts: Result<Vec<::cosmrs::auth::ModuleAccount>> = response
+        response
             .accounts
             .iter()
-            .map(|any| {
-                Ok(any.to_msg::<ModuleAccount>()?.try_into()?)
-                // alternate approach:
-                // let proto_account: ModuleAccount = any.to_msg()?;
-                // let module_account: ::cosmrs::auth::ModuleAccount = proto_account.try_into()?;
-                // Ok(module_account)
-            })
-            .collect();
+            .map(|any| Ok(any.to_msg::<ModuleAccount>()?.try_into()?))
+            .collect::<Result<Vec<::cosmrs::auth::ModuleAccount>>>();
     }
 
-    // TODO - convert the `Any` to proto::cosmos::auth::v1beta1::ModuleAccount to cosmrs::auth::ModuleAccount
-    pub async fn module_accounts_by_name(&self, name: impl Into<String>) -> Result<Option<Any>> {
+    pub async fn module_accounts_by_name(
+        &self,
+        name: impl Into<String>,
+    ) -> Result<Option<::cosmrs::auth::ModuleAccount>> {
         let name = name.into();
         let request = QueryModuleAccountByNameRequest { name };
         let response: QueryModuleAccountByNameResponse = todo!();
 
-        Ok(response.account)
+        // convert `Any` to proto::cosmos::auth::v1beta1::ModuleAccount to cosmrs::auth::ModuleAccount
+        response
+            .account
+            .map(|any| Ok(any.to_msg::<ModuleAccount>()?.try_into()?))
+            .transpose()
     }
 }
