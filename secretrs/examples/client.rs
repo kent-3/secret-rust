@@ -20,7 +20,7 @@ async fn main() -> Result<()> {
     let mut secretrs = SecretNetworkClient::connect(options).await?;
     // println!("{:#?}", secretrs);
 
-    let foo = secretrs.query.auth.module_accounts().await?;
+    let foo = secretrs.query.auth.params().await?;
     println!("{:?}", foo);
 
     // let msg = MsgSend {

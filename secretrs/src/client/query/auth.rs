@@ -54,6 +54,25 @@ where
             self.inner.clone().params(request).await?;
 
         response.into_inner().params.ok_or("params empty".into())
+
+        // example showing how to add block height headers to a request:
+        //
+        // let mut request = ::tonic::Request::new(request);
+        // request
+        //     .metadata_mut()
+        //     .insert("x-cosmos-block-height", "4739000".parse().unwrap());
+        //
+        // let response: ::tonic::Response<QueryParamsResponse> =
+        //     self.inner.clone().params(request).await?;
+        //
+        // let (metadata, response, _) = response.into_parts();
+        //
+        // let http_headers = metadata.into_headers();
+        // let block_height = http_headers.get("x-cosmos-block-height");
+        //
+        // log::debug!("x-cosmos-block-height: {:?}", block_height);
+        //
+        // response.params.ok_or("params empty".into())
     }
 
     pub async fn accounts(&self, pagination: Option<PageRequest>) -> Result<QueryAccountsResponse> {
