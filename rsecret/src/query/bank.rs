@@ -1,8 +1,5 @@
 use super::{Error, Result};
-use secretrs::{
-    clients::BankQueryClient,
-    proto::cosmos::bank::v1beta1::{Params, QueryParamsRequest, QueryParamsResponse},
-};
+use secretrs::{clients::BankQueryClient, proto::cosmos::bank::v1beta1::*};
 use tonic::codegen::{Body, Bytes, StdError};
 
 #[derive(Debug, Clone)]
@@ -13,8 +10,8 @@ pub struct BankQuerier<T> {
 #[cfg(not(target_arch = "wasm32"))]
 impl BankQuerier<::tonic::transport::Channel> {
     pub fn new(channel: ::tonic::transport::Channel) -> Self {
-        let auth = BankQueryClient::new(channel);
-        Self { inner: auth }
+        let inner = BankQueryClient::new(channel);
+        Self { inner }
     }
 }
 
@@ -36,13 +33,71 @@ where
     <T::ResponseBody as Body>::Error: Into<StdError> + Send,
     T: Clone,
 {
+    pub async fn balance(
+        &self,
+        address: impl Into<String>,
+        denom: impl Into<String>,
+    ) -> Result<QueryBalanceResponse> {
+        let address = address.into();
+        let denom = denom.into();
+        let request = QueryBalanceRequest { address, denom };
+        let response: ::tonic::Response<QueryBalanceResponse> =
+            self.inner.clone().balance(request).await?;
+
+        Ok(response.into_inner())
+    }
+
+    pub async fn all_balances(
+        &self,
+        request: QueryAllBalancesRequest,
+    ) -> Result<QueryAllBalancesResponse> {
+        todo!()
+    }
+
+    pub async fn spendable_balances(
+        &self,
+        request: QuerySpendableBalancesRequest,
+    ) -> Result<QuerySpendableBalancesResponse> {
+        todo!()
+    }
+
+    pub async fn total_supply(
+        &self,
+        request: QueryTotalSupplyRequest,
+    ) -> Result<QueryTotalSupplyResponse> {
+        todo!()
+    }
+
+    pub async fn supply_of(&self, request: QuerySupplyOfRequest) -> Result<QuerySupplyOfResponse> {
+        todo!()
+    }
+
     pub async fn params(&self) -> Result<Params> {
-        let req = QueryParamsRequest {};
-        let mut client = self.inner.clone();
+        let request = QueryParamsRequest {};
+        let response: ::tonic::Response<QueryParamsResponse> =
+            self.inner.clone().params(request).await?;
 
-        let response = client.params(req).await?;
-        let (_metadata, response, _extensions) = response.into_parts();
+        response.into_inner().params.ok_or("params empty".into())
+    }
 
-        response.params.ok_or("params empty".into())
+    pub async fn denom_metadata(
+        &self,
+        request: QueryDenomMetadataRequest,
+    ) -> Result<QueryDenomMetadataResponse> {
+        todo!()
+    }
+
+    pub async fn denoms_metadata(
+        &self,
+        request: QueryDenomsMetadataRequest,
+    ) -> Result<QueryDenomsMetadataResponse> {
+        todo!()
+    }
+
+    pub async fn denom_owners(
+        &self,
+        request: QueryDenomOwnersRequest,
+    ) -> Result<QueryDenomOwnersResponse> {
+        todo!()
     }
 }

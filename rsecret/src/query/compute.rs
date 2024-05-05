@@ -1,8 +1,5 @@
 use std::collections::HashMap;
 
-use std::sync::Arc;
-use std::sync::Weak;
-
 use super::{Error, Result};
 use crate::CreateClientOptions;
 use secretrs::{
@@ -24,7 +21,6 @@ use regex::Regex;
 use tonic::{
     async_trait,
     codegen::{Body, Bytes, StdError},
-    IntoRequest,
 };
 
 #[derive(Debug, Clone)]
@@ -156,8 +152,6 @@ where
         // and saving it in the code_hash_cache.
         code_hash: impl Into<String>,
     ) -> Result<(String, String)> {
-        use secretrs::EncryptionUtils;
-
         let code_hash = code_hash.into();
         let query = &request.query;
 

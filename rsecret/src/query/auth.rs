@@ -167,6 +167,26 @@ where
             .map(|any| Ok(any.to_msg::<ModuleAccount>()?.try_into()?))
             .transpose()
     }
+
+    pub async fn address_string_to_bytes(
+        &self,
+        address_string: impl Into<String>,
+    ) -> Result<Vec<u8>> {
+        let address_string = address_string.into();
+        let request = AddressStringToBytesRequest { address_string };
+        let response: ::tonic::Response<AddressStringToBytesResponse> =
+            self.inner.clone().address_string_to_bytes(request).await?;
+
+        Ok(response.into_inner().address_bytes)
+    }
+
+    pub async fn address_bytes_to_string(&self, address_bytes: Vec<u8>) -> Result<String> {
+        let request = AddressBytesToStringRequest { address_bytes };
+        let response: ::tonic::Response<AddressBytesToStringResponse> =
+            self.inner.clone().address_bytes_to_string(request).await?;
+
+        Ok(response.into_inner().address_string)
+    }
 }
 
 #[derive(Clone, Debug)]
