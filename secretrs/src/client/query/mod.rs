@@ -1,7 +1,6 @@
 #![allow(unused)]
 
 use crate::client::CreateClientOptions;
-use std::sync::Arc;
 
 pub mod auth;
 pub mod bank;
@@ -17,15 +16,7 @@ use compute::ComputeQuerier;
 use tendermint::TendermintQuerier;
 use tx::TxQuerier;
 
-use super::{Error, Result, TxOptions};
-use cosmrs::{
-    bank::MsgSend,
-    proto::cosmos::{
-        base::abci::v1beta1::TxResponse,
-        tx::v1beta1::{BroadcastTxRequest, BroadcastTxResponse},
-    },
-    tx::Raw,
-};
+use super::{Error, Result};
 use tonic::codegen::{Body, Bytes, StdError};
 
 #[derive(Debug, Clone)]

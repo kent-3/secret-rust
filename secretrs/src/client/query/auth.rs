@@ -1,11 +1,19 @@
-use crate::client::CreateClientOptions;
-use std::sync::Arc;
-use std::sync::Weak;
-
 use super::{Error, Result};
 use crate::{
     clients::AuthQueryClient,
-    proto::cosmos::auth::v1beta1::{Params, QueryParamsRequest, QueryParamsResponse},
+    proto::cosmos::auth::v1beta1::{
+        AddressBytesToStringRequest, AddressBytesToStringResponse, AddressStringToBytesRequest,
+        AddressStringToBytesResponse, BaseAccount, ModuleAccount, Params,
+        QueryAccountAddressByIdRequest, QueryAccountAddressByIdResponse, QueryAccountRequest,
+        QueryAccountResponse, QueryAccountsRequest, QueryAccountsResponse,
+        QueryModuleAccountsRequest, QueryModuleAccountsResponse, QueryParamsRequest,
+        QueryParamsResponse,
+    },
+    query::PageRequest,
+    Any,
+};
+use secret_sdk_proto::cosmos::auth::v1beta1::{
+    QueryModuleAccountByNameRequest, QueryModuleAccountByNameResponse,
 };
 use tonic::codegen::{Body, Bytes, StdError};
 
@@ -17,16 +25,16 @@ pub struct AuthQuerier<T> {
 #[cfg(not(target_arch = "wasm32"))]
 impl AuthQuerier<::tonic::transport::Channel> {
     pub fn new(channel: ::tonic::transport::Channel) -> Self {
-        let auth = AuthQueryClient::new(channel);
-        Self { inner: auth }
+        let inner = AuthQueryClient::new(channel);
+        Self { inner }
     }
 }
 
 #[cfg(target_arch = "wasm32")]
 impl AuthQuerier<::tonic_web_wasm_client::Client> {
     pub fn new(client: ::tonic_web_wasm_client::Client) -> Self {
-        let auth = AuthQueryClient::new(client);
-        Self { inner: auth }
+        let inner = AuthQueryClient::new(client);
+        Self { inner }
     }
 }
 
@@ -48,5 +56,59 @@ where
         let (_metadata, response, _extensions) = response.into_parts();
 
         response.params.ok_or("params empty".into())
+    }
+
+    pub async fn accounts(&self, pagination: Option<PageRequest>) -> Result<QueryAccountsResponse> {
+        let pagination = pagination.map(Into::into);
+        let request = QueryAccountsRequest { pagination };
+        let response: QueryAccountsResponse = todo!();
+
+        Ok(response)
+    }
+    pub async fn account(&self, address: impl Into<String>) -> Result<Option<Any>> {
+        let address = address.into();
+        let request = QueryAccountRequest { address };
+        let response: QueryAccountResponse = todo!();
+
+        // TODO - Account is `Any`. Convert to the right type by matching on type_url.
+        Ok(response.account)
+    }
+
+    pub async fn account_address_by_id(&self, id: impl Into<i64>) -> Result<String> {
+        let id = id.into();
+        let request = QueryAccountAddressByIdRequest { id };
+        let response: QueryAccountAddressByIdResponse = todo!();
+
+        Ok(response.account_address)
+    }
+
+    pub async fn module_accounts(&self) -> Result<Vec<::cosmrs::auth::ModuleAccount>> {
+        let request = QueryModuleAccountsRequest {};
+        let response: QueryModuleAccountsResponse = todo!();
+
+        // convert `Any` to proto::cosmos::auth::v1beta1::ModuleAccount to cosmrs::auth::ModuleAccount
+        let accounts: Result<Vec<::cosmrs::auth::ModuleAccount>> = response
+            .accounts
+            .iter()
+            .map(|any| {
+                // Ok(any
+                //     .to_msg::<::cosmrs::proto::cosmos::auth::v1beta1::ModuleAccount>()?
+                //     .try_into()?)
+
+                let proto_account: ModuleAccount = any.to_msg()?;
+                let module_account: ::cosmrs::auth::ModuleAccount = proto_account.try_into()?;
+                Ok(module_account)
+                // Ok(crate::auth::ModuleAccount::try_from(proto_account)?)
+            })
+            .collect();
+    }
+
+    // TODO - convert the `Any` to proto::cosmos::auth::v1beta1::ModuleAccount to cosmrs::auth::ModuleAccount
+    pub async fn module_accounts_by_name(&self, name: impl Into<String>) -> Result<Option<Any>> {
+        let name = name.into();
+        let request = QueryModuleAccountByNameRequest { name };
+        let response: QueryModuleAccountByNameResponse = todo!();
+
+        Ok(response.account)
     }
 }

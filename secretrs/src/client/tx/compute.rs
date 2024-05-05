@@ -92,15 +92,7 @@ where
         msg: MsgExecuteContract,
         tx_options: TxOptions,
     ) -> Result<TxResponse> {
-        let tx_request = self.prepare_tx(msg, tx_options);
-        let tx_response = self
-            .perform(tx_request)
-            .await?
-            .into_inner()
-            .tx_response
-            .ok_or("no response")?;
-
-        Ok(tx_response)
+        todo!()
     }
 
     pub async fn migrate_contract() {

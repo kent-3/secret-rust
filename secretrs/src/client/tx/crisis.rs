@@ -2,10 +2,10 @@
 
 use super::{Error, Result, TxOptions};
 use crate::{
-    bank::{MsgMultiSend, MsgSend},
     clients::TxServiceClient,
     proto::cosmos::{
         base::abci::v1beta1::TxResponse,
+        crisis::v1beta1::MsgVerifyInvariant,
         tx::v1beta1::{BroadcastTxRequest, BroadcastTxResponse},
     },
     tx::{BodyBuilder, Msg, Raw, SignDoc, Tx},
@@ -14,7 +14,7 @@ use std::sync::Arc;
 use tonic::codegen::{Body, Bytes, StdError};
 
 #[derive(Debug, Clone)]
-pub struct BankServiceClient<T>
+pub struct CrisisServiceClient<T>
 where
     T: tonic::client::GrpcService<tonic::body::BoxBody>,
     T::Error: Into<StdError>,
@@ -26,7 +26,7 @@ where
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-impl BankServiceClient<::tonic::transport::Channel> {
+impl CrisisServiceClient<::tonic::transport::Channel> {
     pub fn new(channel: ::tonic::transport::Channel) -> Self {
         let inner = TxServiceClient::new(channel);
         Self { inner }
@@ -34,14 +34,14 @@ impl BankServiceClient<::tonic::transport::Channel> {
 }
 
 #[cfg(target_arch = "wasm32")]
-impl BankServiceClient<::tonic_web_wasm_client::Client> {
+impl CrisisServiceClient<::tonic_web_wasm_client::Client> {
     pub fn new(client: ::tonic_web_wasm_client::Client) -> Self {
         let inner = TxServiceClient::new(client);
         Self { inner }
     }
 }
 
-impl<T> BankServiceClient<T>
+impl<T> CrisisServiceClient<T>
 where
     T: tonic::client::GrpcService<tonic::body::BoxBody>,
     T::Error: Into<StdError>,
@@ -49,23 +49,24 @@ where
     <T::ResponseBody as Body>::Error: Into<StdError> + Send,
     T: Clone,
 {
-    pub async fn send(&self, msg: MsgSend, tx_options: TxOptions) -> Result<TxResponse> {
-        let tx_request = self.prepare_tx(msg, tx_options);
-        let tx_response = self
-            .perform(tx_request)
-            .await?
-            .into_inner()
-            .tx_response
-            .ok_or("no response")?;
-
-        Ok(tx_response)
-    }
-
-    pub async fn multi_send(&self, msg: MsgMultiSend, tx_options: TxOptions) -> Result<TxResponse> {
+    pub async fn verify_invariant(
+        &self,
+        msg: MsgVerifyInvariant,
+        tx_options: TxOptions,
+    ) -> Result<TxResponse> {
         todo!()
     }
 
-    fn prepare_tx<M: cosmrs::tx::Msg>(&self, msg: M, tx_options: TxOptions) -> BroadcastTxRequest {
+    fn prepare_tx<M: cosmrs::proto::traits::Message>(
+        &self,
+        msg: M,
+        tx_options: TxOptions,
+    ) -> BroadcastTxRequest {
+        let request = BroadcastTxRequest {
+            tx_bytes: vec![],
+            mode: tx_options.broadcast_mode.into(),
+        };
+
         todo!()
     }
 

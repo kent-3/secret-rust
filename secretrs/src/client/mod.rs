@@ -8,7 +8,7 @@ mod tx;
 pub use account::Wallet;
 pub use query::Querier;
 pub use secret_network_client::{CreateClientOptions, SecretNetworkClient, TxOptions};
-pub use tx::{bank::BankServiceClient, TxSender};
+pub use tx::{BankServiceClient, TxSender};
 
 pub type Result<T> = core::result::Result<T, Error>;
 pub type Error = Box<dyn std::error::Error>;
