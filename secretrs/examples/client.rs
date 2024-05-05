@@ -10,15 +10,17 @@ const CHAIN_ID: &str = "pulsar-3";
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<()> {
+    env_logger::init();
+
     let options = CreateClientOptions {
         url: GRPC_URL,
         chain_id: CHAIN_ID,
         ..Default::default()
     };
     let mut secretrs = SecretNetworkClient::connect(options).await?;
-    println!("{:#?}", secretrs);
+    // println!("{:#?}", secretrs);
 
-    let foo = secretrs.query.auth.params().await?;
+    let foo = secretrs.query.auth.module_accounts().await?;
     println!("{:?}", foo);
 
     // let msg = MsgSend {
