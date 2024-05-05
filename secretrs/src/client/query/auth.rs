@@ -91,14 +91,11 @@ where
             .accounts
             .iter()
             .map(|any| {
-                // Ok(any
-                //     .to_msg::<::cosmrs::proto::cosmos::auth::v1beta1::ModuleAccount>()?
-                //     .try_into()?)
-
-                let proto_account: ModuleAccount = any.to_msg()?;
-                let module_account: ::cosmrs::auth::ModuleAccount = proto_account.try_into()?;
-                Ok(module_account)
-                // Ok(crate::auth::ModuleAccount::try_from(proto_account)?)
+                Ok(any.to_msg::<ModuleAccount>()?.try_into()?)
+                // alternate approach:
+                // let proto_account: ModuleAccount = any.to_msg()?;
+                // let module_account: ::cosmrs::auth::ModuleAccount = proto_account.try_into()?;
+                // Ok(module_account)
             })
             .collect();
     }
