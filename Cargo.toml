@@ -1,10 +1,4 @@
 [workspace]
 resolver = "2"
-members = ["secret-sdk-proto", "secretrs"]
-exclude = ["proto-build", "secret-grpc"]
-
-# This patch adds target_arch = "wasm32" configurations to the rpc clients
-[patch.crates-io]
-tendermint = { git = "https://github.com/kent-3/tendermint-rs", branch = "wasm", version = "0.35" }
-tendermint-proto = { git = "https://github.com/kent-3/tendermint-rs", branch = "wasm", version = "0.35" }
-tendermint-rpc = { git = "https://github.com/kent-3/tendermint-rs", branch = "wasm", version = "0.35" }
+members = ["secretrs", "secret-sdk-proto"]
+exclude = ["proto-build"]
