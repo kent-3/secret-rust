@@ -41,7 +41,6 @@
 //! let data = String::from_utf8(decoded_bytes)?;
 //! ````
 
-pub(crate) mod consts;
 pub mod encryption;
 pub mod error;
 

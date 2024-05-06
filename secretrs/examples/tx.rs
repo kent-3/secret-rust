@@ -1,30 +1,21 @@
-// #![allow(unused)]
-
 use color_eyre::{owo_colors::OwoColorize, Result};
 use tokio::time::{sleep, Duration};
 
-use secretrs::proto::cosmos::tx::v1beta1::BroadcastTxRequest;
 use secretrs::{
     bank::MsgSend,
-    clients::{GrpcClient, TxServiceClient},
+    grpc_clients::{GrpcClient, TxServiceClient},
+    proto::cosmos::tx::v1beta1::BroadcastTxRequest,
     query::PageRequest,
     tendermint::Hash,
     tx::{self, Fee, Msg, SignDoc, SignerInfo, Tx},
     AccountId, Coin,
 };
 
-// const GRPC_URL: &str = "http://grpc.testnet.secretsaturn.net:9090";
 const GRPC_URL: &str = "http://localhost:9090";
 
-async fn async_main() -> Result<()> {
-    // A single item page used throughout for brevity
-    let _one_page = Some(PageRequest {
-        key: vec![],
-        offset: 0,
-        limit: 1,
-        count_total: true,
-        reverse: false,
-    });
+#[tokio::main(flavor = "current_thread")]
+async fn main() -> Result<()> {
+    color_eyre::install()?;
 
     // Tx Broadcast
     println!("\n{}", "Tx Service".underline().blue());
@@ -86,18 +77,4 @@ async fn async_main() -> Result<()> {
     println!("Tx => {:?}", tx.purple());
 
     Ok(())
-}
-
-fn main() -> Result<()> {
-    color_eyre::install()?;
-
-    // Create a new Tokio runtime using the current thread scheduler
-    let rt = tokio::runtime::Builder::new_current_thread()
-        .enable_io()
-        .enable_time()
-        .build()
-        .unwrap();
-
-    // Use the runtime to run the async code
-    rt.block_on(async_main())
 }

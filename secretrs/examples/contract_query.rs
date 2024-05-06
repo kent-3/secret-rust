@@ -4,7 +4,7 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 
 use secretrs::{
-    clients::{ComputeQueryClient, RegistrationQueryClient},
+    grpc_clients::{ComputeQueryClient, RegistrationQueryClient},
     proto::secret::compute::v1beta1::{QueryByContractAddressRequest, QuerySecretContractRequest},
     utils::encryption::EncryptionUtils,
 };

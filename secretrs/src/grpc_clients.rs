@@ -75,42 +75,6 @@ pub use ::secret_sdk_proto::secret::registration::v1beta1::query_client::QueryCl
 // pub use ::secret_sdk_proto::secret::emergencybutton::v1beta1::msg_client::MsgClient as EmergencyButtonMsgClient;
 // pub use ::secret_sdk_proto::secret::intertx::v1beta1::msg_client::MsgClient as InterTxMsgClient;
 
-// Experimental!
-
-#[cfg(feature = "grpc")]
-#[async_trait]
-pub trait GrpcClient {
-    async fn grpc_find_by_hash(
-        grpc_client: &mut TxServiceClient<::tonic::transport::Channel>,
-        tx_hash: Hash,
-    ) -> Result<Tx>;
-}
-
-#[cfg(feature = "grpc")]
-#[async_trait]
-impl GrpcClient for Tx {
-    async fn grpc_find_by_hash(
-        grpc_client: &mut TxServiceClient<::tonic::transport::Channel>,
-        tx_hash: Hash,
-    ) -> Result<Tx> {
-        use cosmrs::proto::cosmos::tx::v1beta1::GetTxRequest;
-
-        grpc_client
-            .get_tx(GetTxRequest {
-                hash: tx_hash.to_string(),
-            })
-            .await
-            .map_err(ErrorReport::from)
-            .and_then(|resp| {
-                resp.into_inner()
-                    .tx
-                    .ok_or(Error::TxNotFound { hash: tx_hash })
-                    .map_err(ErrorReport::from)
-            })
-            .and_then(TryInto::try_into)
-    }
-}
-
 #[cfg(target_arch = "wasm32")]
 #[cfg(test)]
 mod test {

@@ -1,44 +1,10 @@
-use std::fmt::Debug;
-
-use derive_more::From;
+use aes_siv::{siv::Aes128Siv, Key, KeyInit};
 use hex_literal::hex;
 use nanorand::rand::Rng;
-
-use aes_siv::{siv::Aes128Siv, Key, KeyInit};
 use x25519_dalek::{PublicKey, StaticSecret};
 
-pub type Result<T> = core::result::Result<T, Error>;
-
-#[derive(Debug, From)]
-pub enum Error {
-    EmptyCiphertext,
-
-    InvalidCodeHash,
-
-    InvalidChainId {
-        chain_id: String,
-    },
-
-    #[from]
-    FromHex(hex::FromHexError),
-
-    #[from]
-    FromUtf8(std::string::FromUtf8Error),
-
-    #[from]
-    SerdeJson(serde_json::Error),
-
-    #[from]
-    AesSiv(aes_siv::Error),
-}
-
-impl core::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{self:?}")
-    }
-}
-
-impl std::error::Error for Error {}
+use super::Error;
+type Result<T> = core::result::Result<T, Error>;
 
 const DEVNET_CHAIN_IDS: [&str; 1] = ["secretdev-1"];
 const TESTNET_CHAIN_IDS: [&str; 1] = ["pulsar-3"];

@@ -1,17 +1,32 @@
-pub type Result<T> = std::result::Result<T, Error>;
+use derive_more::From;
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, From)]
 pub enum Error {
-    #[error("{0}")]
-    Generic(String),
-    #[error(transparent)]
-    CosmRs(#[from] cosmrs::ErrorReport),
-    #[error(transparent)]
-    SerdeJson(#[from] serde_json::Error),
-    #[error(transparent)]
-    Base64Decode(#[from] base64::DecodeError),
-    #[error(transparent)]
-    FromUtf8(#[from] std::string::FromUtf8Error),
-    #[error(transparent)]
-    FromHex(#[from] hex::FromHexError),
+    EmptyCiphertext,
+
+    InvalidCodeHash,
+
+    InvalidChainId {
+        chain_id: String,
+    },
+
+    #[from]
+    FromHex(hex::FromHexError),
+
+    #[from]
+    FromUtf8(std::string::FromUtf8Error),
+
+    #[from]
+    SerdeJson(serde_json::Error),
+
+    #[from]
+    AesSiv(aes_siv::Error),
 }
+
+impl core::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
+impl std::error::Error for Error {}
