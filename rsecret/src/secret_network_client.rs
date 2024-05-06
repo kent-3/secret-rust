@@ -1,73 +1,24 @@
 #![allow(unused)]
 
-use super::{Error, Result};
-use crate::{query::Querier, tx::TxSender};
+use crate::{
+    query::Querier,
+    tx::TxSender,
+    wallet_amino::{AccountData, Algo, AminoSignResponse, AminoSigner, AminoWallet, StdSignDoc},
+    wallet_direct::Wallet,
+    Error, Result,
+};
+use async_trait::async_trait;
 use secretrs::{
-    proto::cosmos::tx::v1beta1::{AuthInfo, BroadcastMode, SignDoc, SignerInfo, Tx, TxBody, TxRaw},
+    proto::{
+        cosmos::tx::v1beta1::{
+            AuthInfo, BroadcastMode, SignDoc, SignerInfo, Tx as TxPb, TxBody, TxRaw,
+        },
+        tendermint::abci::Event,
+    },
     EncryptionUtils,
 };
-use std::sync::Arc;
+use std::{str::FromStr, sync::Arc, time::Duration};
 use tonic::codegen::{Body, Bytes, StdError};
-
-#[derive(Debug, Clone)]
-pub struct SecretNetworkClient<T>
-where
-    T: tonic::client::GrpcService<tonic::body::BoxBody>,
-    T::Error: Into<StdError>,
-    T::ResponseBody: Body<Data = Bytes> + Send + 'static,
-    <T::ResponseBody as Body>::Error: Into<StdError> + Send,
-    T: Clone,
-{
-    pub url: &'static str,
-    pub query: Querier<T>,
-    pub tx: TxSender<T>,
-    // TODO - figure out this wallet business
-    pub wallet: Option<Wallet>,
-    pub address: String,
-    pub chain_id: &'static str,
-    pub encryption_utils: EncryptionUtils,
-    // TODO - is this worth doing?
-    // tx_options: Arc<TxOptions>,
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-impl SecretNetworkClient<::tonic::transport::Channel> {
-    pub async fn connect(options: CreateClientOptions) -> Result<Self> {
-        let channel = tonic::transport::Channel::from_static(options.url)
-            .connect()
-            .await?;
-        Ok(Self::new(channel, options)?)
-    }
-
-    pub fn new(channel: ::tonic::transport::Channel, options: CreateClientOptions) -> Result<Self> {
-        let url = options.url;
-
-        let query = Querier::new(channel.clone(), &options);
-        let tx = TxSender::new(channel.clone(), &options);
-        // let tx_options = Arc::new(TxOptions::default());
-
-        let wallet = options.wallet;
-        let address = options.wallet_address.unwrap_or_default();
-        let chain_id = options.chain_id;
-
-        let encryption_utils = EncryptionUtils::new(options.encryption_seed, options.chain_id)?;
-
-        Ok(Self {
-            url,
-            query,
-            tx,
-            wallet,
-            address,
-            chain_id,
-            encryption_utils, // tx_options,
-        })
-    }
-
-    // pub fn tx_options(&mut self, options: TxOptions) -> &mut Self {
-    //     self.tx_options = Arc::new(options);
-    //     self
-    // }
-}
 
 /// Options to configure the creation of a client.
 #[derive(Debug)]
@@ -111,11 +62,34 @@ impl CreateClientOptions {
     }
 }
 
-/// A signer capable of signing transactions.
-/// Placeholder for actual implementation details.
+/// Options related to IBC transactions
 #[derive(Debug, Clone)]
-pub struct Wallet {
-    // Define methods relevant to the Signer trait here
+pub struct IbcTxOptions {
+    /// If `false`, skip resolving the IBC response txs (acknowledge/timeout).
+    ///
+    /// Defaults to `true` when broadcasting a tx or using `getTx()`.
+    /// Defaults to `false` when using `txsQuery()`.
+    resolve_responses: bool,
+    /// How much time (in milliseconds) to wait for IBC response txs (acknowledge/timeout).
+    ///
+    /// Defaults to `120_000` (2 minutes).
+    resolve_responses_timeout_ms: u32,
+    /// When waiting for the IBC response txs (acknowledge/timeout) to commit on-chain, how much time (in milliseconds) to wait between checks.
+    ///
+    /// Smaller intervals will cause more load on your node provider. Keep in mind that blocks on Secret Network take about 6 seconds to finalize.
+    ///
+    /// Defaults to `15_000` (15 seconds).
+    resolve_responses_check_interval_ms: u32,
+}
+
+impl Default for IbcTxOptions {
+    fn default() -> Self {
+        Self {
+            resolve_responses: true,
+            resolve_responses_timeout_ms: 120_000,
+            resolve_responses_check_interval_ms: 15_000,
+        }
+    }
 }
 
 /// Options for transactions
@@ -171,33 +145,188 @@ pub struct SignerData {
     pub chain_id: String,
 }
 
-/// Options related to IBC transactions
-#[derive(Debug, Clone)]
-pub struct IbcTxOptions {
-    /// If `false`, skip resolving the IBC response txs (acknowledge/timeout).
-    ///
-    /// Defaults to `true` when broadcasting a tx or using `getTx()`.
-    /// Defaults to `false` when using `txsQuery()`.
-    resolve_responses: bool,
-    /// How much time (in milliseconds) to wait for IBC response txs (acknowledge/timeout).
-    ///
-    /// Defaults to `120_000` (2 minutes).
-    resolve_responses_timeout_ms: u32,
-    /// When waiting for the IBC response txs (acknowledge/timeout) to commit on-chain, how much time (in milliseconds) to wait between checks.
-    ///
-    /// Smaller intervals will cause more load on your node provider. Keep in mind that blocks on Secret Network take about 6 seconds to finalize.
-    ///
-    /// Defaults to `15_000` (15 seconds).
-    resolve_responses_check_interval_ms: u32,
+#[async_trait]
+pub trait ReadonlySigner: AminoSigner {
+    async fn get_accounts() -> Result<Vec<AccountData>> {
+        Err("get_accounts() is not supported in readonly mode.".into())
+    }
+    async fn sign_amino(
+        _signer_address: String,
+        _sign_doc: StdSignDoc,
+    ) -> Result<AminoSignResponse> {
+        Err("sign_amino() is not supported in readonly mode.".into())
+    }
 }
 
-impl Default for IbcTxOptions {
-    fn default() -> Self {
-        Self {
-            resolve_responses: true,
-            resolve_responses_timeout_ms: 120_000,
-            resolve_responses_check_interval_ms: 15_000,
+#[derive(Debug, Clone)]
+pub struct TxResponse {
+    /// Block height in which the tx was committed on-chain
+    pub height: u64,
+    /// An RFC 3339 timestamp of when the tx was committed on-chain.
+    /// The format is `{year}-{month}-{day}T{hour}:{min}:{sec}[.{frac_sec}]Z`.
+    pub timestamp: String,
+    /// Transaction hash (might be used as transaction ID). Guaranteed to be non-empty upper-case hex
+    pub transaction_hash: String,
+    /// Transaction execution error code. 0 on success.
+    pub code: u32,
+    /// Namespace for the Code
+    pub codespace: String,
+    /// Additional information. May be non-deterministic.
+    pub info: String,
+    /// If code != 0, rawLog contains the error.
+    /// If code = 0 you'll probably want to use `jsonLog` or `arrayLog`.
+    /// Values are not decrypted.
+    pub raw_log: String,
+    /// If code = 0, `jsonLog = serde_json::from_str(raw_log)`. Values are decrypted if possible.
+    pub json_log: Option<JsonLog>,
+    /// If code = 0, `array_log` is a flattened `json_log`. Values are decrypted if possible.
+    pub array_log: Option<ArrayLog>,
+    /// Events defines all the events emitted by processing a transaction. Note,
+    /// these events include those emitted by processing all the messages and those
+    /// emitted from the ante handler. Whereas Logs contains the events, with
+    /// additional metadata, emitted only by processing the messages.
+    ///
+    /// Note: events are not decrypted.
+    pub events: Vec<Event>,
+    /// Return value (if there's any) for each input message
+    pub data: Vec<Vec<u8>>,
+    /// Decoded transaction input.
+    pub tx: TxPb,
+    /// Amount of gas that was actually used by the transaction.
+    pub gas_used: u64,
+    /// Gas limit that was originally set by the transaction.
+    pub gas_wanted: u64,
+    /// If code = 0 and the tx resulted in sending IBC packets, `ibc_ack_txs` is a list of IBC acknowledgement or timeout transactions which signal whether the original IBC packet was accepted, rejected, or timed-out on the receiving chain.
+    pub ibc_responses: Vec<IbcResponse>,
+}
+
+#[derive(Debug, Clone)]
+pub struct JsonLogEntry {
+    pub msg_index: u32,
+    pub events: Vec<Event>,
+}
+
+#[derive(Debug, Clone)]
+pub struct JsonLog(pub Vec<JsonLogEntry>);
+
+#[derive(Debug, Clone)]
+pub struct ArrayLogEntry {
+    pub msg: u32,
+    pub r#type: String,
+    pub key: String,
+    pub value: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct ArrayLog(pub Vec<ArrayLogEntry>);
+
+#[derive(Debug, Clone)]
+pub enum IbcResponseType {
+    Ack,
+    Timeout,
+}
+
+#[derive(Debug, Clone)]
+pub struct IbcResponse {
+    pub r#type: IbcResponseType,
+    pub tx: TxResponse,
+}
+
+impl IbcResponseType {
+    pub fn from_str(s: &str) -> Option<IbcResponseType> {
+        match s {
+            "ack" => Some(IbcResponseType::Ack),
+            "timeout" => Some(IbcResponseType::Timeout),
+            _ => None,
         }
+    }
+
+    pub fn to_str(&self) -> &'static str {
+        match self {
+            IbcResponseType::Ack => "ack",
+            IbcResponseType::Timeout => "timeout",
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct SecretNetworkClient<T>
+where
+    T: tonic::client::GrpcService<tonic::body::BoxBody>,
+    T::Error: Into<StdError>,
+    T::ResponseBody: Body<Data = Bytes> + Send + 'static,
+    <T::ResponseBody as Body>::Error: Into<StdError> + Send,
+    T: Clone,
+{
+    pub url: &'static str,
+    pub query: Querier<T>,
+    pub tx: TxSender<T>,
+    pub wallet: Option<Wallet>, // TODO
+    pub address: String,
+    pub chain_id: &'static str,
+    pub encryption_utils: EncryptionUtils,
+    // TODO - is this worth doing?
+    // tx_options: Arc<TxOptions>,
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+impl SecretNetworkClient<::tonic::transport::Channel> {
+    pub async fn connect(options: CreateClientOptions) -> Result<Self> {
+        let channel = tonic::transport::Channel::from_static(options.url)
+            .concurrency_limit(32) // unsure what limit is appropriate
+            .rate_limit(32, Duration::from_secs(1)) // 32 reqs/s seems reasonable
+            .timeout(Duration::from_secs(6)) // server is not aware of this timeout; that ok?
+            .connect()
+            .await?;
+        Ok(Self::new(channel, options)?)
+    }
+
+    pub fn new(channel: ::tonic::transport::Channel, options: CreateClientOptions) -> Result<Self> {
+        let url = options.url;
+
+        let query = Querier::new(channel.clone(), &options);
+        let tx = TxSender::new(channel.clone(), &options);
+        // let tx_options = Arc::new(TxOptions::default());
+
+        let wallet = options.wallet;
+        let address = options.wallet_address.unwrap_or_default();
+        let chain_id = options.chain_id;
+
+        let encryption_utils = EncryptionUtils::new(options.encryption_seed, options.chain_id)?;
+
+        Ok(Self {
+            url,
+            query,
+            tx,
+            wallet,
+            address,
+            chain_id,
+            encryption_utils, // tx_options,
+        })
+    }
+
+    // I think it'd be a nice feature to be able to change the default tx options
+    // pub fn tx_options(&mut self, options: TxOptions) -> &mut Self {
+    //     self.tx_options = Arc::new(options);
+    //     self
+    // }
+}
+
+/// A signer capable of signing transactions.
+/// Placeholder for actual implementation details.
+pub trait Signer {
+    // Define methods relevant to the Signer trait here
+    fn sign();
+}
+
+/// Placeholder for actual implementation details.
+pub trait DirectSigner: Signer {
+    fn sign_direct();
+}
+
+impl Signer for Wallet {
+    fn sign() {
+        todo!()
     }
 }
 

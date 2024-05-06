@@ -8,6 +8,7 @@ use sha2::{Digest, Sha256};
 
 use super::wallet_amino::{AminoWallet, StdSignature};
 
+#[derive(Debug)]
 pub struct Wallet(AminoWallet);
 
 impl Wallet {
