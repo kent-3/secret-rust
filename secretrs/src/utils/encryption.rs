@@ -1,3 +1,53 @@
+//! Encryption Utilities for Secret Contracts
+//!
+//! # Examples
+//!
+//! The following example illustrates how to query a Secret contract:
+//!
+//! ```no_run
+//! use anyhow::Result;
+//! use base64::prelude::{Engine, BASE64_STANDARD};
+//! use secretrs::{
+//!     utils::EncryptionUtils,
+//!     grpc_clients::ComputeQueryClient,
+//!     proto::secret::compute::v1beta1::QuerySecretContractRequest,
+//! };
+//!
+//! #[derive(::serde::Serialize)]
+//! #[serde(rename_all = "snake_case")]
+//! enum QueryMsg {
+//!     TokenInfo {},
+//! }
+//!
+//! #[tokio::main(flavor = "current_thread")]
+//! async fn main() -> Result<()> {
+//!     let mut compute = ComputeQueryClient::connect("http://grpc.testnet.secretsaturn.net:9090").await?;
+//!     let contract_address = "secret19gtpkk25r0c36gtlyrc6repd3q52ngmkpfszw3".to_string();
+//!     let code_hash = "9a00ca4ad505e9be7e6e6dddf8d939b7ec7e9ac8e109c8681f10db9cacb36d42".to_string();
+//!     let query = QueryMsg::TokenInfo {};
+//!
+//!     // Provide `Some(seed: [u8;32])`, or `None` to generate a random keypair
+//!     let encryption_utils = EncryptionUtils::new(None, "pulsar-3")?;
+//!     let encrypted = encryption_utils.encrypt(&code_hash, &query)?;
+//!     // The encrypted message includes a nonce, pubkey, and ciphertext
+//!
+//!     // Extract the nonce to use to decrypt the response later
+//!     let nonce: [u8; 32] = encrypted.nonce();
+//!     // Convert the encrypted message to bytes
+//!     let query: Vec<u8> = encrypted.into_inner();
+//!
+//!     let request = QuerySecretContractRequest { contract_address, query };
+//!     let response = compute.query_secret_contract(request).await?.into_inner();
+//!
+//!     let decrypted_bytes = encryption_utils.decrypt(&nonce, &response.data)?;
+//!     let decrypted_b64_string = String::from_utf8(decrypted_bytes)?;
+//!     let decoded_bytes = BASE64_STANDARD.decode(decrypted_b64_string)?;
+//!     let data = String::from_utf8(decoded_bytes)?;
+//!
+//!     Ok(())
+//! }
+//! ````
+
 use aes_siv::{siv::Aes128Siv, Key, KeyInit};
 use hex_literal::hex;
 use nanorand::rand::Rng;
@@ -19,6 +69,7 @@ const MAINNET_IO_PUBKEY: [u8; 32] =
 const HKDF_SALT: [u8; 32] =
     hex!("000000000000000000024bead8df69990852c202db0e0097c1a12ea637d7e96d");
 
+/// Use to encrypt/decrypt messages related to the `compute` module.
 #[derive(Clone)]
 pub struct EncryptionUtils {
     seed: [u8; 32],
@@ -41,6 +92,19 @@ impl fmt::Debug for EncryptionUtils {
 }
 
 impl EncryptionUtils {
+    /// Creates a new `EncryptionUtils` instance with a seed and chain ID.
+    ///
+    /// The `chain_id` is used to determine the appropriate IO public key.
+    ///
+    /// If no seed is provided, a random seed will be generated.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use secretrs::utils::EncryptionUtils;
+    ///
+    /// let utils = EncryptionUtils::new(None, "secret-4").expect("Failed to create EncryptionUtils");
+    /// ```
     pub fn new(seed: Option<[u8; 32]>, chain_id: &str) -> Result<Self> {
         let seed = seed.unwrap_or_else(EncryptionUtils::generate_seed);
         let (privkey, pubkey) = EncryptionUtils::generate_x25519_key_pair(&seed);
@@ -62,19 +126,54 @@ impl EncryptionUtils {
         })
     }
 
-    pub fn new_with_io_key(seed: Option<[u8; 32]>, consensus_io_pubkey: [u8; 32]) -> Result<Self> {
+    /// Creates a new `EncryptionUtils` instance with a seed and chain ID.
+    ///
+    /// The `consensus_io_pubkey` is manually provided instead of being derived from a chain ID.
+    ///
+    /// If no seed is provided, a random seed will be generated.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use secretrs::utils::EncryptionUtils;
+    /// const DEVNET_IO_PUBKEY: [u8; 32] =
+    ///     hex_literal::hex!("ea7f818284fec45ee630ec2ee7f1b160fbfb169042c13525e0024b88f204d96b");
+    ///
+    /// let utils = EncryptionUtils::from_io_key(None, DEVNET_IO_PUBKEY);
+    /// ````
+    pub fn from_io_key(seed: Option<[u8; 32]>, consensus_io_pubkey: [u8; 32]) -> Self {
         let seed = seed.unwrap_or_else(EncryptionUtils::generate_seed);
         let (privkey, pubkey) = EncryptionUtils::generate_x25519_key_pair(&seed);
 
-        Ok(EncryptionUtils {
+        EncryptionUtils {
             seed,
             privkey,
             pubkey,
             consensus_io_pubkey,
-        })
+        }
     }
 
-    pub fn encrypt<M: serde::Serialize>(
+    /// Encrypts a message for a specific contract using the associated code hash.
+    ///
+    /// The message must implement [`serde::Serialize`]. A 64-character hexadecimal string representing the code hash is prepended to the message before encryption. The resulting [`SecretMsg`] is a concatenation of nonce, public key, and ciphertext.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # #[derive(::serde::Serialize)]
+    /// # #[serde(rename_all = "snake_case")]
+    /// # enum QueryMsg {
+    /// #     HelloWorld,
+    /// # }
+    /// use secretrs::utils::EncryptionUtils;
+    ///
+    /// let utils = EncryptionUtils::new(None, "secret-4").expect("Failed to create EncryptionUtils");
+    /// let contract_code_hash = "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
+    /// let msg = QueryMsg::HelloWorld;
+    /// let encrypted_msg = utils.encrypt(contract_code_hash, &msg).expect("Encryption failed");
+    /// let (nonce, pubkey, ciphertext) = encrypted_msg.into_parts();
+    /// ```
+    pub fn encrypt<M: ::serde::Serialize>(
         &self,
         contract_code_hash: &str,
         msg: &M,
@@ -100,6 +199,47 @@ impl EncryptionUtils {
         Ok(msg)
     }
 
+    /// Decrypts a message returned by the enclave.
+    ///
+    /// This function decrypts responses using the same nonce that was used to encrypt the request.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use secretrs::utils::EncryptionUtils;
+    /// # use secretrs::proto::secret::compute::v1beta1::QuerySecretContractResponse;
+    /// # use base64::prelude::{Engine, BASE64_STANDARD};
+    /// # use ::serde::Serialize;
+    /// #
+    /// # #[derive(Serialize)]
+    /// # #[serde(rename_all = "snake_case")]
+    /// # enum QueryMsg {
+    /// #     HelloWorld,
+    /// # }
+    /// #
+    /// # use ::anyhow::{Result, Error};
+    /// # fn main() -> Result<()> {
+    /// # let utils = EncryptionUtils::new(None, "secret-4").expect("Failed to create EncryptionUtils");
+    /// # let contract_code_hash = "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
+    /// # let msg = QueryMsg::HelloWorld;
+    /// # let encrypted_msg = utils.encrypt(contract_code_hash, &msg).expect("Encryption failed");
+    /// # let (nonce, pubkey, ciphertext) = encrypted_msg.into_parts();
+    /// # let response = QuerySecretContractResponse { data: ciphertext };
+    /// # // alternate method
+    /// # let data = utils.decrypt(&nonce, &response.data)
+    /// #     .and_then(|bytes| String::from_utf8(bytes).map_err(Into::into))
+    /// #     .and_then(|b64_string| BASE64_STANDARD.decode(b64_string).map_err(Into::into))
+    /// #     .and_then(|decoded_bytes| String::from_utf8(decoded_bytes).map_err(Into::into))
+    /// #     .unwrap();
+    /// #
+    /// let decrypted_bytes = utils.decrypt(&nonce, &response.data).expect("Decryption failed");
+    /// let decrypted_b64_string = String::from_utf8(decrypted_bytes).expect("Decoding error");
+    /// let decoded_bytes = BASE64_STANDARD.decode(decrypted_b64_string).expect("Decoding error");
+    /// let data = String::from_utf8(decoded_bytes).expect("Decoding error");
+    /// #
+    /// # Ok(())
+    /// # }
+    /// ```
     pub fn decrypt(&self, nonce: &[u8; 32], ciphertext: &[u8]) -> Result<Vec<u8>> {
         if ciphertext.is_empty() {
             return Err(Error::EmptyCiphertext);
@@ -111,10 +251,12 @@ impl EncryptionUtils {
         cipher.decrypt([[]], ciphertext).map_err(Error::AesSiv)
     }
 
+    /// Get the seed used to derive the key pair.
     pub fn get_seed(&self) -> [u8; 32] {
         self.seed
     }
 
+    /// Get the public key of the derived key pair.
     pub fn get_pubkey(&self) -> [u8; 32] {
         *self.pubkey.as_bytes()
     }
@@ -159,10 +301,12 @@ impl EncryptionUtils {
 /// - [0..32): nonce (32 bytes)
 /// - [32..64): pubkey (32 bytes)
 /// - [64..): ciphertext (remaining bytes)
+#[derive(Debug, Clone)]
 pub struct SecretMsg(Vec<u8>);
 
 #[allow(unused)]
 impl SecretMsg {
+    /// Get the nonce used to encrypt the message.
     pub fn nonce(&self) -> [u8; 32] {
         let mut array = [0u8; 32];
         array.copy_from_slice(&self.0[0..32]);
@@ -170,6 +314,7 @@ impl SecretMsg {
         array
     }
 
+    /// Get the public key corresponding to the private key used for message encryption.
     pub fn pubkey(&self) -> [u8; 32] {
         let mut array = [0u8; 32];
         array.copy_from_slice(&self.0[32..64]);
@@ -177,14 +322,13 @@ impl SecretMsg {
         array
     }
 
+    /// Get the encrypted message itself.
     pub fn ciphertext(&self) -> Vec<u8> {
         self.0[64..].to_vec()
     }
 
-    /// Consumes `self` returning the parts of the message.
-    ///
-    /// Returns `(nonce, pubkey, ciphertext)`
-    pub fn into_parts(self) -> ([u8; 32], [u8; 32], Vec<u8>) {
+    /// Get all three parts of the message: `(nonce, pubkey, ciphertext)`
+    pub fn into_parts(&self) -> ([u8; 32], [u8; 32], Vec<u8>) {
         let mut nonce = [0u8; 32];
         nonce.copy_from_slice(&self.0[0..32]);
         let mut pubkey = [0u8; 32];
@@ -194,7 +338,7 @@ impl SecretMsg {
         (nonce, pubkey, ciphertext)
     }
 
-    /// Consumes `self` returning the message as `Vec<u8>`
+    /// Consumes `self`, returning the full message as a byte vector.
     pub fn into_inner(self) -> Vec<u8> {
         self.0
     }

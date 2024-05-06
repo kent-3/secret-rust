@@ -1,6 +1,6 @@
 [package]
 name = "secretrs"
-version = "0.1.0-beta.0"
+version = "0.1.0-beta.1"
 authors = ["Kent"]
 license = "Unlicense"
 repository = "https://github.com/kent-3/secret-rust/tree/main/secretrs"
@@ -27,6 +27,24 @@ grpc-core = ["cosmrs/grpc-core", "secret-sdk-proto/grpc"]
 grpc = ["grpc-core", "cosmrs/grpc", "secret-sdk-proto/grpc-transport"]
 # dev = ["tokio"]
 
+[[example]]
+name = "encrypt"
+path = "examples/encrypt.rs"
+
+[[example]]
+name = "query"
+path = "examples/query.rs"
+required-features = ["grpc"]
+
+[[example]]
+name = "tx"
+path = "examples/tx.rs"
+required-features = ["grpc"]
+
+[[example]]
+name = "contract_query"
+path = "examples/contract_query.rs"
+required-features = ["grpc"]
 
 [dependencies]
 tonic-web-wasm-client = "0.5.1"
@@ -64,9 +82,10 @@ thiserror = "1.0.51"
 tonic = { version = "0.11.0", features = ["tls", "tls-webpki-roots", "transport"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
-color-eyre = "0.6"
-regex = "1"
-tokio = { version = "1.37", features = ["rt", "sync", "time", "macros"] }
+anyhow = "1.0.83"
+color-eyre = "0.6.3"
+regex = "1.10.4"
+tokio = { version = "1.37.0", features = ["rt", "sync", "time", "macros"] }
 tonic = { version = "0.11.0", features = ["tls", "tls-webpki-roots", "transport"] }
 
 # wasm
@@ -79,22 +98,3 @@ nanorand = { version = "0.7.0", features = ["getrandom", "zeroize"] }
 tokio = { version = "1.37", features = ["rt", "sync", "time", "macros"] }
 tonic-web-wasm-client = "0.5.1"
 wasm-bindgen-test = "0.3.42"
-
-[[example]]
-name = "encrypt"
-path = "examples/encrypt.rs"
-
-[[example]]
-name = "query"
-path = "examples/query.rs"
-required-features = ["grpc"]
-
-[[example]]
-name = "tx"
-path = "examples/tx.rs"
-required-features = ["grpc"]
-
-[[example]]
-name = "contract_query"
-path = "examples/contract_query.rs"
-required-features = ["grpc"]

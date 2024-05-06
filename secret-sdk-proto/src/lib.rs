@@ -1,6 +1,6 @@
 pub use cosmos_sdk_proto::*;
 
-/// The version (commit hash) of the Cosmos SDK used when generating this library.
+/// The version of Secret Network used when generating this library.
 pub const SECRET_VERSION: &str = include_str!("prost/secret/SECRET_COMMIT");
 
 /// Secret protobuf definitions.
