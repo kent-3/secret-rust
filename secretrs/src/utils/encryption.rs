@@ -126,7 +126,7 @@ impl EncryptionUtils {
         })
     }
 
-    /// Creates a new `EncryptionUtils` instance with a seed and chain ID.
+    /// Creates a new `EncryptionUtils` instance with a seed and IO public key.
     ///
     /// The `consensus_io_pubkey` is manually provided instead of being derived from a chain ID.
     ///
