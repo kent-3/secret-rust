@@ -1,5 +1,5 @@
 use base64::prelude::{Engine, BASE64_STANDARD};
-use color_eyre::{owo_colors::OwoColorize, Result};
+use color_eyre::{eyre::Error, owo_colors::OwoColorize, Result};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 
@@ -38,27 +38,20 @@ async fn main() -> Result<()> {
         .into_inner()
         .code_hash;
 
-    let query = QueryMsg::MemberCode {
-        address: "secret1r8w55329ukm802sdy0kr3jd5vq8ugtwt8h9djj".to_string(),
-        key: "hola".to_string(),
-    };
-    println!("Query => {:>4}", serde_json::to_string(&query)?.green());
-
-    // Encryption Utils section
+    let query = QueryMsg::TokenInfo {};
+    println!("Query => {}", serde_json::to_string(&query)?.green());
 
     let encryption_utils = EncryptionUtils::new(None, "pulsar-3")?;
     let encrypted = encryption_utils.encrypt(&code_hash, &query)?;
     let nonce = encrypted.nonce();
     let query = encrypted.into_inner();
 
-    // Encryption Utils section
-
     let display_request = format!(
         "QuerySecretContractRequest {{ contract_address: \"{}\", query: \"{}\" }}",
         CONTRACT_ADDRESS,
         BASE64_STANDARD.encode(&query)
     );
-    println!("Request => {:>4}", display_request.green());
+    println!("Request => {}", display_request.green());
 
     let request = QuerySecretContractRequest {
         contract_address: CONTRACT_ADDRESS.to_string(),
@@ -72,6 +65,11 @@ async fn main() -> Result<()> {
             let decrypted_b64_string = String::from_utf8(decrypted_bytes)?;
             let decoded_bytes = BASE64_STANDARD.decode(decrypted_b64_string)?;
             let data = String::from_utf8(decoded_bytes)?;
+            println!("Response => {}", data.green());
+            assert_eq!(
+                data.trim(),
+                r#"{"token_info":{"name":"Amber","symbol":"AMBER","decimals":6,"total_supply":"8888000000"}}"#
+            );
 
             Ok(data)
         }
@@ -84,15 +82,14 @@ async fn main() -> Result<()> {
                 let encrypted_bytes = BASE64_STANDARD.decode(&caps[1])?;
                 let decrypted_bytes = encryption_utils.decrypt(&nonce, &encrypted_bytes)?;
                 let decrypted_string = String::from_utf8(decrypted_bytes)?;
-                Err(secretrs::utils::Error::Generic(decrypted_string))
+                Err(Error::msg(decrypted_string))
             } else {
-                Err(secretrs::utils::Error::Generic(error_message.to_string()))
+                Err(Error::msg(error_message.to_string()))
             }
         }
     }?;
 
     let deserialized: QueryAnswer = serde_json::from_str(response.trim())?;
-    println!("Response => {:>4?}", deserialized.green());
 
     Ok(())
 }

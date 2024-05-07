@@ -4,7 +4,7 @@
 //!
 //! The following example illustrates how to query a Secret contract:
 //!
-//! ```no_run
+//! ```
 //! use anyhow::Result;
 //! use base64::prelude::{Engine, BASE64_STANDARD};
 //! use secretrs::{
@@ -43,6 +43,11 @@
 //!     let decrypted_b64_string = String::from_utf8(decrypted_bytes)?;
 //!     let decoded_bytes = BASE64_STANDARD.decode(decrypted_b64_string)?;
 //!     let data = String::from_utf8(decoded_bytes)?;
+//!
+//!     assert_eq!(
+//!         data.trim(),
+//!         r#"{"token_info":{"name":"Amber","symbol":"AMBER","decimals":6,"total_supply":"8888000000"}}"#
+//!     );
 //!
 //!     Ok(())
 //! }
