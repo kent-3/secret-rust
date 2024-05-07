@@ -309,7 +309,6 @@ impl EncryptionUtils {
 #[derive(Debug, Clone)]
 pub struct SecretMsg(Vec<u8>);
 
-#[allow(unused)]
 impl SecretMsg {
     /// Get the nonce used to encrypt the message.
     pub fn nonce(&self) -> [u8; 32] {
