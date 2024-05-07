@@ -1,6 +1,6 @@
 [package]
 name = "secretrs"
-version = "0.1.0-beta.1"
+version = "0.1.0-beta.2"
 authors = ["Kent"]
 license = "Unlicense"
 repository = "https://github.com/kent-3/secret-rust/tree/main/secretrs"
