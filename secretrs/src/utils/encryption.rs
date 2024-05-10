@@ -54,6 +54,7 @@
 //! ````
 
 use aes_siv::{siv::Aes128Siv, Key, KeyInit};
+use hex::ToHex;
 use hex_literal::hex;
 use nanorand::rand::Rng;
 use x25519_dalek::{PublicKey, StaticSecret};
@@ -88,10 +89,13 @@ use std::fmt;
 impl fmt::Debug for EncryptionUtils {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("EncryptionUtils")
-            .field("seed", &self.seed)
+            .field("seed", &self.seed.encode_hex::<String>())
             .field("privkey", &"[REDACTED]")
-            .field("pubkey", &self.pubkey)
-            .field("consensus_io_pubkey", &self.consensus_io_pubkey)
+            .field("pubkey", &self.pubkey.encode_hex::<String>())
+            .field(
+                "consensus_io_pubkey",
+                &self.consensus_io_pubkey.encode_hex::<String>(),
+            )
             .finish()
     }
 }
