@@ -43,13 +43,55 @@ impl From<MsgInstantiateContract> for proto::secret::compute::v1beta1::MsgInstan
     ) -> proto::secret::compute::v1beta1::MsgInstantiateContract {
         proto::secret::compute::v1beta1::MsgInstantiateContract {
             sender: msg.sender.to_bytes(),
-            callback_code_hash: "".to_string(),
             code_id: msg.code_id,
             label: msg.label,
             init_msg: msg.init_msg,
             init_funds: vec![],
-            callback_sig: vec![],
             admin: "".to_string(),
+            callback_code_hash: "".to_string(),
+            callback_sig: vec![],
+        }
+    }
+}
+
+/// MsgInstantiateContractResponse return instantiation result data
+#[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+pub struct MsgInstantiateContractResponse {
+    /// Address is the bech32 address of the new contract instance.
+    pub address: AccountId,
+
+    /// Data contains base64-encoded bytes to returned from the contract
+    pub data: Vec<u8>,
+}
+
+impl Msg for MsgInstantiateContractResponse {
+    type Proto = proto::secret::compute::v1beta1::MsgInstantiateContractResponse;
+}
+
+impl TryFrom<proto::secret::compute::v1beta1::MsgInstantiateContractResponse>
+    for MsgInstantiateContractResponse
+{
+    type Error = ErrorReport;
+
+    fn try_from(
+        proto: proto::secret::compute::v1beta1::MsgInstantiateContractResponse,
+    ) -> Result<MsgInstantiateContractResponse> {
+        Ok(MsgInstantiateContractResponse {
+            address: proto.address.parse()?,
+            data: proto.data,
+        })
+    }
+}
+
+impl From<MsgInstantiateContractResponse>
+    for proto::secret::compute::v1beta1::MsgInstantiateContractResponse
+{
+    fn from(
+        msg: MsgInstantiateContractResponse,
+    ) -> proto::secret::compute::v1beta1::MsgInstantiateContractResponse {
+        proto::secret::compute::v1beta1::MsgInstantiateContractResponse {
+            address: msg.address.to_string(),
+            data: msg.data,
         }
     }
 }
