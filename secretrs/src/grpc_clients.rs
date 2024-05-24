@@ -103,7 +103,7 @@ mod test {
         let request = QueryParamsRequest {};
         let response = secret_auth.params(request).await.expect("response");
 
-        let (metadata, response, _extensions) = response.into_parts();
+        let (_metadata, response, _extensions) = response.into_parts();
         println!("Response => {:?}", response);
     }
 }

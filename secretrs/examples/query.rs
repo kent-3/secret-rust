@@ -9,7 +9,7 @@ const GRPC_URL: &str = "http://grpc.testnet.secretsaturn.net:9090";
 const TEST_ADDRESS: &str = "secret1ap26qrlp8mcq2pg6r47w43l0y8zkqm8a450s03";
 
 #[tokio::main(flavor = "current_thread")]
-async fn async_main() -> Result<()> {
+async fn main() -> Result<()> {
     color_eyre::install()?;
 
     // A single item page used throughout for brevity
@@ -112,7 +112,7 @@ async fn async_main() -> Result<()> {
     println!("Creating `tx` service client...");
 
     use secretrs::tendermint::Hash;
-    use secretrs::Tx;
+    // use secretrs::Tx;
 
     let mut tx_client = TxServiceClient::connect(GRPC_URL).await?;
     let tx_hash = Hash::try_from(hex::decode(
