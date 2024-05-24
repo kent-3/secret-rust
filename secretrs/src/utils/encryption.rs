@@ -19,6 +19,7 @@
 //!     TokenInfo {},
 //! }
 //!
+//! # #[cfg(feature = "grpc_client")]
 //! #[tokio::main(flavor = "current_thread")]
 //! async fn main() -> Result<()> {
 //!     let mut compute = ComputeQueryClient::connect("http://grpc.testnet.secretsaturn.net:9090").await?;
@@ -51,7 +52,15 @@
 //!
 //!     Ok(())
 //! }
-//! ````
+//! ```
+//!
+//! # The following code is for when the feature is not enabled to prevent compilation errors
+//! ```
+//! # #[cfg(not(feature = "grpc_client"))]
+//! fn main() {
+//!     // The example is disabled because the grpc_client feature is not enabled.
+//! }
+//! ```
 
 use aes_siv::{siv::Aes128Siv, Key, KeyInit};
 use hex::ToHex;
@@ -60,7 +69,7 @@ use nanorand::rand::Rng;
 use x25519_dalek::{PublicKey, StaticSecret};
 
 use super::Error;
-type Result<T> = core::result::Result<T, Error>;
+type Result<T> = std::result::Result<T, Error>;
 
 const DEVNET_CHAIN_IDS: [&str; 1] = ["secretdev-1"];
 const TESTNET_CHAIN_IDS: [&str; 1] = ["pulsar-3"];
@@ -361,7 +370,7 @@ impl From<Vec<u8>> for SecretMsg {
 #[cfg(test)]
 mod test {
     type Error = Box<dyn std::error::Error>;
-    type Result<T> = core::result::Result<T, Error>;
+    type Result<T> = std::result::Result<T, Error>;
 
     use super::*;
     use serde::{Deserialize, Serialize};
