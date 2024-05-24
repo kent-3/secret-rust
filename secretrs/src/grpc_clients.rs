@@ -93,7 +93,7 @@ mod test {
 
     #[wasm_bindgen_test]
     async fn client_works_in_browser() {
-        use crate::clients::AuthQueryClient;
+        use crate::grpc_clients::AuthQueryClient;
         use crate::proto::cosmos::auth::v1beta1::QueryParamsRequest;
         use ::tonic_web_wasm_client::Client;
 

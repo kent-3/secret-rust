@@ -1,9 +1,7 @@
 use color_eyre::{eyre::OptionExt, owo_colors::OwoColorize, Result};
 
 use secretrs::{
-    grpc_clients::{
-        AuthQueryClient, BankQueryClient, ComputeQueryClient, GrpcClient, TxServiceClient,
-    },
+    grpc_clients::{AuthQueryClient, BankQueryClient, ComputeQueryClient, TxServiceClient},
     proto,
 };
 
@@ -120,8 +118,8 @@ async fn async_main() -> Result<()> {
     let tx_hash = Hash::try_from(hex::decode(
         "00CA925FBE9E424480DCA762F87F3C6DB94F0D17118C09D96C21FA5D1CCD28A3",
     )?)?;
-    let tx = Tx::grpc_find_by_hash(&mut tx_client, tx_hash).await?;
-    println!("Tx => {:?}", tx.purple());
+    // let tx = Tx::grpc_find_by_hash(&mut tx_client, tx_hash).await?;
+    // println!("Tx => {:?}", tx.purple());
 
     Ok(())
 }

@@ -90,6 +90,7 @@ async fn main() -> Result<()> {
     }?;
 
     let deserialized: QueryAnswer = serde_json::from_str(response.trim())?;
+    println!("Deserialized Response => {}", deserialized.green());
 
     Ok(())
 }
