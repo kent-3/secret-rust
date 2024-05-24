@@ -97,7 +97,7 @@ mod test {
         use crate::proto::cosmos::auth::v1beta1::QueryParamsRequest;
         use ::tonic_web_wasm_client::Client;
 
-        const GRPC_WEB_URL: &str = "http://localhost:9091";
+        const GRPC_WEB_URL: &str = "https://grpc.testnet.secretsaturn.net";
 
         let mut secret_auth = AuthQueryClient::new(Client::new(GRPC_WEB_URL.to_string()));
         let request = QueryParamsRequest {};

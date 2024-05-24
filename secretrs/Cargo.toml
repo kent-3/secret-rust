@@ -44,8 +44,6 @@ path = "examples/contract_query.rs"
 required-features = ["grpc"]
 
 [dependencies]
-tonic-web-wasm-client = "0.5.1"
-
 # blockchain
 cosmrs = { version = "0.16.0" }
 secret-sdk-proto = { version = "0.1.0", default-features = false, path = "../secret-sdk-proto" }

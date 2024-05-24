@@ -1,7 +1,7 @@
 use color_eyre::{eyre::OptionExt, owo_colors::OwoColorize, Result};
 
 use secretrs::{
-    grpc_clients::{AuthQueryClient, BankQueryClient, ComputeQueryClient, TxServiceClient},
+    grpc_clients::{AuthQueryClient, BankQueryClient, ComputeQueryClient},
     proto,
 };
 
