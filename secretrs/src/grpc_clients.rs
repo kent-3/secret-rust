@@ -92,6 +92,7 @@ mod test {
     wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
     #[wasm_bindgen_test]
+    #[ignore = "response takes too long"]
     async fn client_works_in_browser() {
         use crate::grpc_clients::AuthQueryClient;
         use crate::proto::cosmos::auth::v1beta1::QueryParamsRequest;
