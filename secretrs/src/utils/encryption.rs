@@ -20,7 +20,6 @@
 //!     TokenInfo {},
 //! }
 //!
-//! # #[cfg(feature = "grpc_client")]
 //! #[tokio::main(flavor = "current_thread")]
 //! async fn main() -> Result<()> {
 //!     let mut compute = ComputeQueryClient::connect("http://grpc.testnet.secretsaturn.net:9090").await?;
