@@ -4,7 +4,8 @@
 //!
 //! The following example illustrates how to query a Secret contract:
 //!
-//! ```
+#![cfg_attr(feature = "grpc-core", doc = " ```")]
+#![cfg_attr(not(feature = "grpc-core"), doc = " ```ignore")]
 //! use anyhow::Result;
 //! use base64::prelude::{Engine, BASE64_STANDARD};
 //! use secretrs::{
@@ -51,14 +52,6 @@
 //!     );
 //!
 //!     Ok(())
-//! }
-//! ```
-//!
-//! # The following code is for when the feature is not enabled to prevent compilation errors
-//! ```
-//! # #[cfg(not(feature = "grpc_client"))]
-//! fn main() {
-//!     // The example is disabled because the grpc_client feature is not enabled.
 //! }
 //! ```
 
