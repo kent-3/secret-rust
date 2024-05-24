@@ -4,8 +4,8 @@
 //!
 //! The following example illustrates how to query a Secret contract:
 //!
-#![cfg_attr(feature = "grpc-core", doc = " ```")]
-#![cfg_attr(not(feature = "grpc-core"), doc = " ```ignore")]
+#![cfg_attr(feature = "grpc", doc = " ```")]
+#![cfg_attr(not(feature = "grpc"), doc = " ```ignore")]
 //! use anyhow::Result;
 //! use base64::prelude::{Engine, BASE64_STANDARD};
 //! use secretrs::{

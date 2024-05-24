@@ -4,8 +4,8 @@
 //! * All transactions are broadcast using a [`TxServiceClient`].
 //!
 //! # Examples
-//!
-//! ```no_run
+#![cfg_attr(feature = "grpc", doc = " ```no_run")]
+#![cfg_attr(not(feature = "grpc"), doc = " ```ignore")]
 //! # use anyhow::Result;
 //! # #[tokio::main(flavor = "current_thread")]
 //! # async fn main() -> Result<()> {
