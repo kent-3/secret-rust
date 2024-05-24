@@ -108,16 +108,16 @@ async fn main() -> Result<()> {
     println!("Response => {:?}", response.green());
 
     // Tx Search
-    println!("\n{}", "Tx Search".underline().blue());
-    println!("Creating `tx` service client...");
-
-    use secretrs::tendermint::Hash;
+    // println!("\n{}", "Tx Search".underline().blue());
+    // println!("Creating `tx` service client...");
+    //
+    // use secretrs::tendermint::Hash;
     // use secretrs::Tx;
-
-    let mut tx_client = TxServiceClient::connect(GRPC_URL).await?;
-    let tx_hash = Hash::try_from(hex::decode(
-        "00CA925FBE9E424480DCA762F87F3C6DB94F0D17118C09D96C21FA5D1CCD28A3",
-    )?)?;
+    //
+    // let mut tx_client = TxServiceClient::connect(GRPC_URL).await?;
+    // let tx_hash = Hash::try_from(hex::decode(
+    //     "00CA925FBE9E424480DCA762F87F3C6DB94F0D17118C09D96C21FA5D1CCD28A3",
+    // )?)?;
     // let tx = Tx::grpc_find_by_hash(&mut tx_client, tx_hash).await?;
     // println!("Tx => {:?}", tx.purple());
 

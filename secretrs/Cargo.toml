@@ -103,5 +103,6 @@ nanorand = { version = "0.7.0", features = ["getrandom", "zeroize"] }
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
 tokio = { version = "1.37", features = ["rt", "sync", "time", "macros"] }
+color-eyre = "0.6.3"
 tonic-web-wasm-client = "0.5.1"
 wasm-bindgen-test = "0.3.42"
