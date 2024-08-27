@@ -18,26 +18,9 @@ impl ::prost::Name for Params {
         "/secret.emergencybutton.v1beta1.Params".into()
     }
 }
-/// GenesisState - genesis state of x/wasm
-#[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct GenesisState {
-    #[prost(message, optional, tag = "1")]
-    pub params: ::core::option::Option<Params>,
-}
-impl ::prost::Name for GenesisState {
-    const NAME: &'static str = "GenesisState";
-    const PACKAGE: &'static str = "secret.emergencybutton.v1beta1";
-    fn full_name() -> ::prost::alloc::string::String {
-        "secret.emergencybutton.v1beta1.GenesisState".into()
-    }
-    fn type_url() -> ::prost::alloc::string::String {
-        "/secret.emergencybutton.v1beta1.GenesisState".into()
-    }
-}
 /// ParamsRequest is the request type for the Query/Params RPC method.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct ParamsRequest {}
 impl ::prost::Name for ParamsRequest {
     const NAME: &'static str = "ParamsRequest";
@@ -94,8 +77,8 @@ pub mod query_client {
     where
         T: tonic::client::GrpcService<tonic::body::BoxBody>,
         T::Error: Into<StdError>,
-        T::ResponseBody: Body<Data = Bytes> + Send + 'static,
-        <T::ResponseBody as Body>::Error: Into<StdError> + Send,
+        T::ResponseBody: Body<Data = Bytes> + std::marker::Send + 'static,
+        <T::ResponseBody as Body>::Error: Into<StdError> + std::marker::Send,
     {
         pub fn new(inner: T) -> Self {
             let inner = tonic::client::Grpc::new(inner);
@@ -119,7 +102,7 @@ pub mod query_client {
                 >,
             >,
             <T as tonic::codegen::Service<http::Request<tonic::body::BoxBody>>>::Error:
-                Into<StdError> + Send + Sync,
+                Into<StdError> + std::marker::Send + std::marker::Sync,
         {
             QueryClient::new(InterceptedService::new(inner, interceptor))
         }
@@ -179,6 +162,23 @@ pub mod query_client {
         }
     }
 }
+/// GenesisState - genesis state of x/wasm
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct GenesisState {
+    #[prost(message, optional, tag = "1")]
+    pub params: ::core::option::Option<Params>,
+}
+impl ::prost::Name for GenesisState {
+    const NAME: &'static str = "GenesisState";
+    const PACKAGE: &'static str = "secret.emergencybutton.v1beta1";
+    fn full_name() -> ::prost::alloc::string::String {
+        "secret.emergencybutton.v1beta1.GenesisState".into()
+    }
+    fn type_url() -> ::prost::alloc::string::String {
+        "/secret.emergencybutton.v1beta1.GenesisState".into()
+    }
+}
 /// MsgToggleIbcSwitch represents a message to toggle the emergencybutton status by the defined pauser.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -198,7 +198,7 @@ impl ::prost::Name for MsgToggleIbcSwitch {
 }
 /// MsgToggleIbcSwitchResponse defines the response type for the toggle.
 #[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct MsgToggleIbcSwitchResponse {}
 impl ::prost::Name for MsgToggleIbcSwitchResponse {
     const NAME: &'static str = "MsgToggleIbcSwitchResponse";
@@ -237,8 +237,8 @@ pub mod msg_client {
     where
         T: tonic::client::GrpcService<tonic::body::BoxBody>,
         T::Error: Into<StdError>,
-        T::ResponseBody: Body<Data = Bytes> + Send + 'static,
-        <T::ResponseBody as Body>::Error: Into<StdError> + Send,
+        T::ResponseBody: Body<Data = Bytes> + std::marker::Send + 'static,
+        <T::ResponseBody as Body>::Error: Into<StdError> + std::marker::Send,
     {
         pub fn new(inner: T) -> Self {
             let inner = tonic::client::Grpc::new(inner);
@@ -259,7 +259,7 @@ pub mod msg_client {
                 >,
             >,
             <T as tonic::codegen::Service<http::Request<tonic::body::BoxBody>>>::Error:
-                Into<StdError> + Send + Sync,
+                Into<StdError> + std::marker::Send + std::marker::Sync,
         {
             MsgClient::new(InterceptedService::new(inner, interceptor))
         }

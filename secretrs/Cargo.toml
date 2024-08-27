@@ -1,6 +1,6 @@
 [package]
 name = "secretrs"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Kent"]
 license = "Unlicense"
 repository = "https://github.com/kent-3/secret-rust/tree/main/secretrs"
@@ -45,21 +45,22 @@ required-features = ["grpc"]
 
 [dependencies]
 # blockchain
-cosmrs = { version = "0.16.0" }
-secret-sdk-proto = { version = "0.1.0", default-features = false, path = "../secret-sdk-proto" }
+cosmrs = { version = "0.19.0" }
+secret-sdk-proto = { version = "0.1.1", default-features = false, path = "../secret-sdk-proto" }
 cosmwasm-std = { version = "=1.1.11", package = "secret-cosmwasm-std" }
-bip32 = "0.5.1"
+bip32 = "0.5.2"
 bip39 = "2.0.0"
 
 # general
-async-trait = "0.1.80"
-serde = "1.0.202"
-serde_json = "1.0.117"
+async-trait = "0.1.81"
+serde = "1.0.209"
+serde_json = "1.0.127"
 nanorand = { version = "0.7.0", features = ["getrandom", "zeroize"] }
-derive_more = { version = "1.0.0-beta.6", default-features = false, features = ["from"] }
-regex = "1.10.4"
-log = "0.4.21"
-env_logger = "0.11.3"
+# Downgraded to support 1.72
+derive_more = { version = "=1.0.0-beta.6", default-features = false, features = ["from"] }
+regex = "1.10.6"
+log = "0.4.22"
+env_logger = "0.11.5"
 
 # crypto
 base64 = "0.22.1"
@@ -71,17 +72,17 @@ aes-siv = "0.7.0"
 x25519-dalek = { version = "2.0.1", features = ["static_secrets"] }
 
 # errors
-thiserror = "1.0.61"
+thiserror = "1.0.63"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-tonic = { version = "0.11.0", features = ["tls", "tls-webpki-roots", "transport"] }
+tonic = { version = "0.12.2", features = ["tls", "tls-webpki-roots", "transport"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 anyhow = "1.0.86"
 color-eyre = "0.6.3"
-regex = "1.10.4"
-tokio = { version = "1.37.0", features = ["rt", "sync", "time", "macros"] }
-tonic = { version = "0.11.0", features = ["tls", "tls-webpki-roots", "transport"] }
+regex = "1.10.6"
+tokio = { version = "1.39.3", features = ["rt", "sync", "time", "macros"] }
+tonic = { version = "0.12.2", features = ["tls", "tls-webpki-roots", "transport"] }
 
 # wasm
 
@@ -90,7 +91,7 @@ getrandom = { version = "0.2.15", features = ["js"] }
 nanorand = { version = "0.7.0", features = ["getrandom", "zeroize"] }
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
-tokio = { version = "1.37", features = ["rt", "sync", "time", "macros"] }
+tokio = { version = "1.39.3", features = ["rt", "sync", "time", "macros"] }
 color-eyre = "0.6.3"
-tonic-web-wasm-client = "0.5.1"
-wasm-bindgen-test = "0.3.42"
+tonic-web-wasm-client = "0.6.0"
+wasm-bindgen-test = "0.3.43"

@@ -1,7 +1,9 @@
 use color_eyre::{eyre::OptionExt, owo_colors::OwoColorize, Result};
 
 use secretrs::{
-    grpc_clients::{AuthQueryClient, BankQueryClient, ComputeQueryClient},
+    grpc_clients::{
+        AuthQueryClient, BankQueryClient, ComputeQueryClient, MintQueryClient, StakingQueryClient,
+    },
     proto,
 };
 
@@ -64,6 +66,17 @@ async fn main() -> Result<()> {
     //     .ok_or_eyre("No Account")?;
     // println!("Account: {:?}", base_account.green());
 
+    println!("\n{}", "Mint Module".underline().blue());
+    println!("Creating `mint` query client...");
+    let mut secret_mint = MintQueryClient::connect(GRPC_URL).await?;
+
+    let request = proto::cosmos::mint::v1beta1::QueryParamsRequest {};
+    println!("Request => {:?}", request.green());
+
+    let response = secret_mint.params(request).await?;
+    let (metadata, response, _extensions) = response.into_parts();
+    println!("Response => {:?}", response.green());
+
     // Bank Queries
     println!("\n{}", "Bank Module".underline().blue());
     println!("Creating `bank` query client...");
@@ -106,6 +119,20 @@ async fn main() -> Result<()> {
 
     let response = response.into_inner();
     println!("Response => {:?}", response.green());
+
+    // Staking Queries
+    println!("\n{}", "Staking Module".underline().blue());
+    println!("Creating `staking` query client...");
+    let mut secret_staking = StakingQueryClient::connect(GRPC_URL).await?;
+
+    // let validators = secretrs.all_validators().await?;
+    // println!("Validators: {:?}", validators.len());
+    //
+    // let validator_monikers: Vec<String> = validators
+    //     .into_iter()
+    //     .map(|v| v.description.unwrap_or_default().moniker)
+    //     .collect();
+    // println!("{:?}", validator_monikers);
 
     // Tx Search
     // println!("\n{}", "Tx Search".underline().blue());
