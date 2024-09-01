@@ -22,7 +22,7 @@ bip32 = ["cosmrs/bip32"]
 rpc = ["cosmrs/rpc"]
 getrandom = ["cosmrs/getrandom"]
 grpc-core = ["cosmrs/grpc-core", "secret-sdk-proto/grpc"]
-grpc = ["grpc-core", "cosmrs/grpc", "secret-sdk-proto/grpc-transport"]
+grpc = ["grpc-core", "cosmrs/grpc", "secret-sdk-proto/grpc-transport", "tonic/transport"]
 
 [[example]]
 name = "encrypt"
@@ -73,6 +73,9 @@ x25519-dalek = { version = "2.0.1", features = ["static_secrets"] }
 
 # errors
 thiserror = "1.0.63"
+
+# gRPC
+tonic = { version = "0.12.2", optional = true, default-features = false, features = ["codegen", "prost"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 getrandom = { version = "0.2.15", features = ["js"] }

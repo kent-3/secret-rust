@@ -74,7 +74,7 @@ async fn main() -> Result<()> {
     println!("Request => {:?}", request.green());
 
     let response = secret_mint.params(request).await?;
-    let (metadata, response, _extensions) = response.into_parts();
+    let (_metadata, response, _extensions) = response.into_parts();
     println!("Response => {:?}", response.green());
 
     // Bank Queries
@@ -121,9 +121,9 @@ async fn main() -> Result<()> {
     println!("Response => {:?}", response.green());
 
     // Staking Queries
-    println!("\n{}", "Staking Module".underline().blue());
-    println!("Creating `staking` query client...");
-    let mut secret_staking = StakingQueryClient::connect(GRPC_URL).await?;
+    // println!("\n{}", "Staking Module".underline().blue());
+    // println!("Creating `staking` query client...");
+    // let mut secret_staking = StakingQueryClient::connect(GRPC_URL).await?;
 
     // let validators = secretrs.all_validators().await?;
     // println!("Validators: {:?}", validators.len());
