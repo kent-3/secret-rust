@@ -50,7 +50,6 @@ pub use cosmos::upgrade::v1beta1::query_client::QueryClient as UpgradeQueryClien
 
 pub use secret::compute::v1beta1::query_client::QueryClient as ComputeQueryClient;
 pub use secret::emergencybutton::v1beta1::query_client::QueryClient as EmergencyButtonQueryClient;
-pub use secret::intertx::v1beta1::query_client::QueryClient as InterTxQueryClient;
 pub use secret::registration::v1beta1::query_client::QueryClient as RegistrationQueryClient;
 
 // IBC
@@ -82,7 +81,6 @@ pub use ibc::core::connection::v1::query_client::QueryClient as IbcConnectionQue
 // Secret Message Clients
 // pub use ::secret_sdk_proto::secret::compute::v1beta1::msg_client::MsgClient as ComputeMsgClient;
 // pub use ::secret_sdk_proto::secret::emergencybutton::v1beta1::msg_client::MsgClient as EmergencyButtonMsgClient;
-// pub use ::secret_sdk_proto::secret::intertx::v1beta1::msg_client::MsgClient as InterTxMsgClient;
 
 #[cfg(target_arch = "wasm32")]
 #[cfg(test)]
