@@ -4,7 +4,7 @@
 //!
 //! The following example illustrates how to query a Secret contract:
 //!
-#![cfg_attr(feature = "grpc", doc = " ```ignore")]
+#![cfg_attr(feature = "grpc", doc = " ```no_run")]
 #![cfg_attr(not(feature = "grpc"), doc = " ```ignore")]
 //! use anyhow::Result;
 //! use base64::prelude::{Engine, BASE64_STANDARD};
