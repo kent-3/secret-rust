@@ -223,6 +223,7 @@ fn compile_secret_proto_and_services(out_dir: &Path) {
     // Enable generation of `prost::Name` annotations for all types
     let mut config = prost_build::Config::new();
     config.enable_type_names();
+    config.type_attribute(".", "#[derive(serde::Serialize, serde::Deserialize)]");
 
     // Compile all of the proto files, along with grpc service clients
     info!("Compiling proto definitions and clients for GRPC services!");
