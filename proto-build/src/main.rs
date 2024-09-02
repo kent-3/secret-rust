@@ -238,7 +238,7 @@ fn compile_secret_proto_and_services(out_dir: &Path) {
         .unwrap();
     info!("=> Done!");
 
-    // TODO - Use `buf` to have separate files for the tonic clients
+    // TODO: Use `buf` to have separate files for the tonic clients
     // let proto_path = Path::new(SECRET_DIR).join("proto");
     // run_buf("buf.secret.gen.yaml", proto_path, out_dir);
 }
