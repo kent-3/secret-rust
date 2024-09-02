@@ -21,11 +21,11 @@ use walkdir::WalkDir;
 static QUIET: AtomicBool = AtomicBool::new(false);
 
 /// The secret network commit or tag to be cloned and used to build the proto files
-const SECRET_NETWORK_REV: &str = "v1.13.3";
+const SECRET_NETWORK_REV: &str = "v2.0.0-beta.4";
 
 const SECRET_REPO: &str = "https://github.com/scrtlabs/SecretNetwork.git";
 
-/// The directory generated cosmos-sdk proto files go into in this repo
+/// The directory generated secret-sdk proto files go into in this repo
 const SECRET_SDK_PROTO_DIR: &str = "../secret-sdk-proto/src/prost/";
 /// A temporary directory to clone SecretNetwork repo into
 const SECRET_DIR: &str = "SecretNetwork";
@@ -34,7 +34,7 @@ const TMP_BUILD_DIR: &str = "/tmp/tmp-protobuf/";
 
 /// Protos belonging to these Protobuf packages will be excluded
 /// (i.e. because they are sourced from `tendermint-proto`)
-const EXCLUDED_PROTO_PACKAGES: &[&str] = &["gogoproto", "google", "tendermint"];
+const EXCLUDED_PROTO_PACKAGES: &[&str] = &["gogoproto", "google", "tendermint", "cosmos_proto"];
 
 /// Log info to the console (if `QUIET` is disabled)
 macro_rules! info {
