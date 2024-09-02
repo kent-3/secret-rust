@@ -42,7 +42,7 @@ impl TryFrom<proto::secret::compute::v1beta1::MsgStoreCode> for MsgStoreCode {
 impl From<MsgStoreCode> for proto::secret::compute::v1beta1::MsgStoreCode {
     fn from(msg: MsgStoreCode) -> proto::secret::compute::v1beta1::MsgStoreCode {
         proto::secret::compute::v1beta1::MsgStoreCode {
-            sender: msg.sender.to_bytes(),
+            sender: msg.sender.to_string(),
             wasm_byte_code: msg.wasm_byte_code,
             source: msg.source.unwrap_or_default(),
             builder: msg.builder.unwrap_or_default(),
