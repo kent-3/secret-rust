@@ -52,7 +52,7 @@ bip32 = "0.5.2"
 bip39 = "2.0.0"
 
 # general
-async-trait = "0.1.81"
+async-trait = "0.1.82"
 serde = "1.0.209"
 serde_json = "1.0.127"
 nanorand = { version = "0.7.0", features = ["getrandom", "zeroize"] }
