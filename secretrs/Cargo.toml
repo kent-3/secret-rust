@@ -21,8 +21,8 @@ default = ["bip32", "getrandom"]
 bip32 = ["cosmrs/bip32"]
 rpc = ["cosmrs/rpc"]
 getrandom = ["cosmrs/getrandom"]
-grpc-core = ["cosmrs/grpc-core", "secret-sdk-proto/grpc"]
-grpc = ["grpc-core", "cosmrs/grpc", "secret-sdk-proto/grpc-transport"]
+grpc-core = ["cosmrs/grpc-core", "secret-sdk-proto/grpc", "ibc-proto/client"]
+grpc = ["grpc-core", "cosmrs/grpc", "secret-sdk-proto/grpc-transport", "ibc-proto/transport"]
 
 [[example]]
 name = "encrypt"

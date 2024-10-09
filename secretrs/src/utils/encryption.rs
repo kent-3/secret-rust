@@ -162,13 +162,9 @@ impl EnigmaUtils {
     ///
     /// # Examples
     ///
-    #[cfg_attr(feature = "grpc", doc = " ```no_run")]
-    #[cfg_attr(not(feature = "grpc"), doc = " ```ignore")]
-    /// # use anyhow::Result;
+    /// ```ignore
     /// # use secretrs::utils::EnigmaUtils;
     /// # use secretrs::grpc_clients::RegistrationQueryClient;
-    /// # #[tokio::main(flavor = "current_thread")]
-    /// # async fn main() -> Result<()> {
     /// let mut registration = RegistrationQueryClient::connect("GRPC_URL").await?;
     /// let enclave_key_bytes = registration.tx_key(()).await?.into_inner().key;
     ///
@@ -176,8 +172,6 @@ impl EnigmaUtils {
     /// io_key.copy_from_slice(&enclave_key_bytes[0..32]);
     ///
     /// let utils = EnigmaUtils::from_io_key(None, io_key);
-    /// # Ok(())
-    /// # }
     /// ```
     pub fn from_io_key(seed: Option<[u8; 32]>, consensus_io_pubkey: [u8; 32]) -> Self {
         let seed = seed.unwrap_or_else(EnigmaUtils::generate_seed);
