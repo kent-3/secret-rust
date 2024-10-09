@@ -11,6 +11,7 @@ pub enum Error {
     InvalidChainId {
         chain_id: String,
     },
+    DevnetIoKey,
     #[from]
     FromHex(hex::FromHexError),
     #[from]
@@ -25,7 +26,10 @@ pub enum Error {
 
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{self:?}")
+        match self {
+            Error::DevnetIoKey => write!(f, "Devnet IO key changes every time. Please provide it using the `EnigmaUtils::from_io_key` method."),
+            _ => write!(f, "{self:?}")
+        }
     }
 }
 

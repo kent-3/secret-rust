@@ -25,7 +25,7 @@
 //! [`tonic`]: https://docs.rs/tonic
 
 use ::cosmrs::proto::cosmos;
-use ::cosmrs::proto::ibc;
+use ::ibc_proto::ibc;
 use ::secret_sdk_proto::secret;
 
 // Service Clients

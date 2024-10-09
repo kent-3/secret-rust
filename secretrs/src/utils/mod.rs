@@ -3,5 +3,5 @@
 pub mod encryption;
 pub mod error;
 
-pub use encryption::EncryptionUtils;
+pub use encryption::{EnigmaUtils, SecretUtils};
 pub use error::Error;

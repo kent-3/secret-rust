@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use secretrs::{
     grpc_clients::{ComputeQueryClient, RegistrationQueryClient},
     proto::secret::compute::v1beta1::{QueryByContractAddressRequest, QuerySecretContractRequest},
-    utils::encryption::EncryptionUtils,
+    utils::encryption::EnigmaUtils,
 };
 
 const GRPC_URL: &str = "http://grpc.testnet.secretsaturn.net:9090";
@@ -21,7 +21,7 @@ async fn main() -> Result<()> {
     let mut secret_registration = RegistrationQueryClient::connect(GRPC_URL).await?;
 
     let enclave_key_bytes = secret_registration.tx_key(()).await?.into_inner().key;
-    let enclave_key = hex::encode(enclave_key_bytes);
+    let enclave_key = hex::encode(&enclave_key_bytes);
     println!("Enclave Public Key => {:>4}", enclave_key.bright_blue());
 
     println!("\n{}", "Compute Module".underline().blue());
@@ -41,8 +41,11 @@ async fn main() -> Result<()> {
     let query = QueryMsg::TokenInfo {};
     println!("Query => {}", serde_json::to_string(&query)?.green());
 
-    let encryption_utils = EncryptionUtils::new(None, "pulsar-3")?;
-    let encrypted = encryption_utils.encrypt(&code_hash, &query)?;
+    let mut io_key = [0u8; 32];
+    io_key.copy_from_slice(&enclave_key_bytes[0..32]);
+
+    let enigma_utils = EnigmaUtils::from_io_key(None, io_key);
+    let encrypted = enigma_utils.encrypt(&code_hash, &query)?;
     let nonce = encrypted.nonce();
     let query = encrypted.into_inner();
 
@@ -61,7 +64,7 @@ async fn main() -> Result<()> {
     let response = match secret_compute.query_secret_contract(request).await {
         Ok(response) => {
             let response = response.into_inner();
-            let decrypted_bytes = encryption_utils.decrypt(&nonce, &response.data)?;
+            let decrypted_bytes = enigma_utils.decrypt(&nonce, &response.data)?;
             let decrypted_b64_string = String::from_utf8(decrypted_bytes)?;
             let decoded_bytes = BASE64_STANDARD.decode(decrypted_b64_string)?;
             let data = String::from_utf8(decoded_bytes)?;
@@ -80,7 +83,7 @@ async fn main() -> Result<()> {
 
             if let Some(caps) = re.captures(error_message) {
                 let encrypted_bytes = BASE64_STANDARD.decode(&caps[1])?;
-                let decrypted_bytes = encryption_utils.decrypt(&nonce, &encrypted_bytes)?;
+                let decrypted_bytes = enigma_utils.decrypt(&nonce, &encrypted_bytes)?;
                 let decrypted_string = String::from_utf8(decrypted_bytes)?;
                 Err(Error::msg(decrypted_string))
             } else {

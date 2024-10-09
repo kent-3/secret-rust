@@ -35,12 +35,9 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
 pub mod compute;
-
 #[cfg(feature = "grpc-core")]
 pub mod grpc_clients;
 pub mod utils;
-
-pub use utils::EncryptionUtils;
 
 pub use cosmrs::*;
 pub use secret_sdk_proto::{self as proto, SECRET_VERSION};

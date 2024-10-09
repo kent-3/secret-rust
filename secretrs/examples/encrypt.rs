@@ -1,7 +1,7 @@
 use color_eyre::Result;
 use serde::{Deserialize, Serialize};
 
-use secretrs::utils::EncryptionUtils;
+use secretrs::utils::EnigmaUtils;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<()> {
@@ -10,7 +10,7 @@ async fn main() -> Result<()> {
     let code_hash = "9a00ca4ad505e9be7e6e6dddf8d939b7ec7e9ac8e109c8681f10db9cacb36d42";
     let query = QueryMsg::TokenInfo {};
 
-    let encryption_utils = EncryptionUtils::new(None, "pulsar-3")?;
+    let encryption_utils = EnigmaUtils::new(None, "pulsar-3")?;
     let encrypted = encryption_utils.encrypt(code_hash, &query)?;
     let nonce = encrypted.nonce();
     let query = encrypted.into_inner();
