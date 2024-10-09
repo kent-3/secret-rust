@@ -164,7 +164,8 @@ impl EnigmaUtils {
     ///
     /// # Examples
     ///
-    /// ```no_run
+    #[cfg_attr(feature = "grpc", doc = " ```no_run")]
+    #[cfg_attr(not(feature = "grpc"), doc = " ```ignore")]
     /// # use anyhow::Result;
     /// # use secretrs::utils::EnigmaUtils;
     /// # use secretrs::grpc_clients::RegistrationQueryClient;
