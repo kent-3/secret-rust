@@ -9,7 +9,7 @@
 //! use anyhow::Result;
 //! use base64::prelude::{Engine, BASE64_STANDARD};
 //! use secretrs::{
-//!     utils::EncryptionUtils,
+//!     utils::EnigmaUtils,
 //!     grpc_clients::ComputeQueryClient,
 //!     proto::secret::compute::v1beta1::QuerySecretContractRequest,
 //! };
@@ -28,7 +28,7 @@
 //!     let query = QueryMsg::TokenInfo {};
 //!
 //!     // Provide `Some(seed: [u8;32])`, or `None` to generate a random keypair
-//!     let encryption_utils = EncryptionUtils::new(None, "pulsar-3")?;
+//!     let encryption_utils = EnigmaUtils::new(None, "pulsar-3")?;
 //!     let encrypted = encryption_utils.encrypt(&code_hash, &query)?;
 //!     // The encrypted message includes a nonce, pubkey, and ciphertext
 //!
@@ -109,7 +109,7 @@ use std::fmt;
 
 impl fmt::Debug for EnigmaUtils {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("EncryptionUtils")
+        f.debug_struct("EnigmaUtils")
             .field("seed", &self.seed.encode_hex::<String>())
             .field("privkey", &"[REDACTED]")
             .field("pubkey", &self.pubkey.encode_hex::<String>())
@@ -122,7 +122,7 @@ impl fmt::Debug for EnigmaUtils {
 }
 
 impl EnigmaUtils {
-    /// Creates a new `EncryptionUtils` instance with a seed and chain ID.
+    /// Creates a new `EnigmaUtils` instance with a seed and chain ID.
     ///
     /// The `chain_id` is used to determine the appropriate IO public key.
     ///
@@ -131,9 +131,9 @@ impl EnigmaUtils {
     /// # Examples
     ///
     /// ```
-    /// use secretrs::utils::EncryptionUtils;
+    /// use secretrs::utils::EnigmaUtils;
     ///
-    /// let utils = EncryptionUtils::new(None, "secret-4").expect("Failed to create EncryptionUtils");
+    /// let utils = EnigmaUtils::new(None, "secret-4").expect("Failed to create EnigmaUtils");
     /// ```
     pub fn new(seed: Option<[u8; 32]>, chain_id: &str) -> Result<Self> {
         let seed = seed.unwrap_or_else(EnigmaUtils::generate_seed);
@@ -165,15 +165,20 @@ impl EnigmaUtils {
     /// # Examples
     ///
     /// ```no_run
+    /// # use anyhow::Result;
     /// # use secretrs::utils::EnigmaUtils;
-    /// # use secretrs::grpc_clients::RegistrationQueryClient,
-    /// let mut registration = RegistrationQueryClient::connect(GRPC_URL).await?;
+    /// # use secretrs::grpc_clients::RegistrationQueryClient;
+    /// # #[tokio::main(flavor = "current_thread")]
+    /// # async fn main() -> Result<()> {
+    /// let mut registration = RegistrationQueryClient::connect("GRPC_URL").await?;
     /// let enclave_key_bytes = registration.tx_key(()).await?.into_inner().key;
     ///
     /// let mut io_key = [0u8; 32];
     /// io_key.copy_from_slice(&enclave_key_bytes[0..32]);
     ///
     /// let utils = EnigmaUtils::from_io_key(None, io_key);
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn from_io_key(seed: Option<[u8; 32]>, consensus_io_pubkey: [u8; 32]) -> Self {
         let seed = seed.unwrap_or_else(EnigmaUtils::generate_seed);
@@ -199,9 +204,9 @@ impl EnigmaUtils {
     /// # enum QueryMsg {
     /// #     HelloWorld,
     /// # }
-    /// use secretrs::utils::EncryptionUtils;
+    /// use secretrs::utils::EnigmaUtils;
     ///
-    /// let utils = EncryptionUtils::new(None, "secret-4").expect("Failed to create EncryptionUtils");
+    /// let utils = EnigmaUtils::new(None, "secret-4").expect("Failed to create EnigmaUtils");
     /// let contract_code_hash = "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
     /// let msg = QueryMsg::HelloWorld;
     /// let encrypted_msg = utils.encrypt(contract_code_hash, &msg).expect("Encryption failed");
@@ -240,7 +245,7 @@ impl EnigmaUtils {
     /// # Examples
     ///
     /// ```no_run
-    /// # use secretrs::utils::EncryptionUtils;
+    /// # use secretrs::utils::EnigmaUtils;
     /// # use secretrs::proto::secret::compute::v1beta1::QuerySecretContractResponse;
     /// # use base64::prelude::{Engine, BASE64_STANDARD};
     /// # use ::serde::Serialize;
@@ -253,7 +258,7 @@ impl EnigmaUtils {
     /// #
     /// # use ::anyhow::{Result, Error};
     /// # fn main() -> Result<()> {
-    /// # let utils = EncryptionUtils::new(None, "secret-4").expect("Failed to create EncryptionUtils");
+    /// # let utils = EnigmaUtils::new(None, "secret-4").expect("Failed to create EnigmaUtils");
     /// # let contract_code_hash = "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
     /// # let msg = QueryMsg::HelloWorld;
     /// # let encrypted_msg = utils.encrypt(contract_code_hash, &msg).expect("Encryption failed");
@@ -409,50 +414,50 @@ impl From<Vec<u8>> for SecretMsg {
     }
 }
 
-// #[cfg(test)]
-// mod test {
-//     type Error = Box<dyn std::error::Error>;
-//     type Result<T> = std::result::Result<T, Error>;
-//
-//     use super::*;
-//     use serde::{Deserialize, Serialize};
-//
-//     #[derive(Serialize, Deserialize)]
-//     struct Msg {
-//         foo: String,
-//         bar: u32,
-//     }
-//
-//     #[test]
-//     fn encryption_utils() -> Result<()> {
-//         let msg = Msg {
-//             foo: "hello world".to_string(),
-//             bar: 42,
-//         };
-//
-//         let utils = EncryptionUtils::new(None, "secret-4")?;
-//         let code_hash = "9a00ca4ad505e9be7e6e6dddf8d939b7ec7e9ac8e109c8681f10db9cacb36d42";
-//         let encrypted = utils.encrypt(code_hash, &msg)?;
-//
-//         let (nonce, _pubkey, ciphertext) = encrypted.into_parts();
-//         let decrypted_bytes = utils.decrypt(&nonce, &ciphertext)?;
-//
-//         let plaintext = format!("{}{}", code_hash, serde_json::to_string(&msg)?);
-//         let decrypted_msg = String::from_utf8(decrypted_bytes)?;
-//         assert_eq!(plaintext, decrypted_msg);
-//
-//         // test that the same seed will produce the same pubkey
-//
-//         let seed = utils.get_seed();
-//         let pubkey = utils.get_pubkey();
-//
-//         let utils2 = EncryptionUtils::new(Some(seed), "secret-4")?;
-//         let seed2 = utils2.get_seed();
-//         let pubkey2 = utils2.get_pubkey();
-//
-//         assert_eq!(seed, seed2);
-//         assert_eq!(pubkey, pubkey2);
-//
-//         Ok(())
-//     }
-// }
+#[cfg(test)]
+mod test {
+    type Error = Box<dyn std::error::Error>;
+    type Result<T> = std::result::Result<T, Error>;
+
+    use super::*;
+    use serde::{Deserialize, Serialize};
+
+    #[derive(Serialize, Deserialize)]
+    struct Msg {
+        foo: String,
+        bar: u32,
+    }
+
+    #[test]
+    fn enigma_utils() -> Result<()> {
+        let msg = Msg {
+            foo: "hello world".to_string(),
+            bar: 42,
+        };
+
+        let utils = EnigmaUtils::new(None, "secret-4")?;
+        let code_hash = "9a00ca4ad505e9be7e6e6dddf8d939b7ec7e9ac8e109c8681f10db9cacb36d42";
+        let encrypted = utils.encrypt(code_hash, &msg)?;
+
+        let (nonce, _pubkey, ciphertext) = encrypted.into_parts();
+        let decrypted_bytes = utils.decrypt(&nonce, &ciphertext)?;
+
+        let plaintext = format!("{}{}", code_hash, serde_json::to_string(&msg)?);
+        let decrypted_msg = String::from_utf8(decrypted_bytes)?;
+        assert_eq!(plaintext, decrypted_msg);
+
+        // test that the same seed will produce the same pubkey
+
+        let seed = utils.get_seed();
+        let pubkey = utils.get_pubkey();
+
+        let utils2 = EnigmaUtils::new(Some(seed), "secret-4")?;
+        let seed2 = utils2.get_seed();
+        let pubkey2 = utils2.get_pubkey();
+
+        assert_eq!(seed, seed2);
+        assert_eq!(pubkey, pubkey2);
+
+        Ok(())
+    }
+}
