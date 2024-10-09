@@ -1339,11 +1339,9 @@ dependencies = [
  "cosmos-sdk-proto",
  "flex-error",
  "ics23",
- "informalsystems-pbjson",
  "prost",
  "subtle-encoding",
  "tendermint-proto",
- "tonic",
 ]
 
 [[package]]
@@ -1355,9 +1353,7 @@ dependencies = [
  "anyhow",
  "bytes",
  "hex",
- "informalsystems-pbjson",
  "prost",
- "serde",
 ]
 
 [[package]]
@@ -1394,16 +1390,6 @@ checksum = "707907fe3c25f5424cce2cb7e1cbcafee6bdbe735ca90ef77c29e84591e5b9da"
 dependencies = [
  "equivalent",
  "hashbrown 0.15.0",
-]
-
-[[package]]
-name = "informalsystems-pbjson"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9aa4a0980c8379295100d70854354e78df2ee1c6ca0f96ffe89afeb3140e3a3d"
-dependencies = [
- "base64 0.21.7",
- "serde",
 ]
 
 [[package]]

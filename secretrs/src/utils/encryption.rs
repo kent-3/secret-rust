@@ -76,8 +76,6 @@ const MAINNET_IO_PUBKEY: [u8; 32] =
 const HKDF_SALT: [u8; 32] =
     hex!("000000000000000000024bead8df69990852c202db0e0097c1a12ea637d7e96d");
 
-// TODO: rename to SecretUtils
-
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[cfg_attr(not(target_arch = "wasm32"), async_trait)]
 /// Encryption Utilities for Secret Contracts.
