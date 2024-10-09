@@ -339,7 +339,7 @@ impl SecretUtils for EnigmaUtils {
         msg: &M,
     ) -> Result<Vec<u8>> {
         self.encrypt(contract_code_hash, msg)
-            .and_then(|msg| Ok(msg.into_inner()))
+            .map(|msg| msg.into_inner())
     }
 
     async fn decrypt(&self, nonce: &[u8; 32], ciphertext: &[u8]) -> Result<Vec<u8>> {
