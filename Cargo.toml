@@ -1,4 +1,4 @@
 [workspace]
 resolver = "2"
-members = ["secretrs", "secret-sdk-proto", "secret-grpc"]
+members = ["secretrs", "secret-sdk-proto"]
 exclude = ["proto-build"]
