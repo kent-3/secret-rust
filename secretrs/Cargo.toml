@@ -17,12 +17,12 @@ rustdoc-args = ["--cfg", "docsrs"]
 targets = ["x86_64-unknown-linux-gnu", "wasm32-unknown-unknown"]
 
 [features]
-default = ["bip32", "getrandom"]
+default = ["bip32", "getrandom", "grpc-core"]
 bip32 = ["cosmrs/bip32"]
 rpc = ["cosmrs/rpc"]
 getrandom = ["cosmrs/getrandom"]
 grpc-core = ["cosmrs/grpc-core", "secret-sdk-proto/grpc", "ibc-proto/client"]
-grpc = ["grpc-core", "cosmrs/grpc", "secret-sdk-proto/grpc-transport", "ibc-proto/transport"]
+grpc = ["grpc-core", "cosmrs/grpc", "secret-sdk-proto/grpc-transport", "ibc-proto/transport", "tonic/transport"]
 
 [[example]]
 name = "encrypt"
@@ -77,15 +77,16 @@ curve25519-dalek = "4.1.3"
 # errors
 thiserror = "1.0.64"
 
+# gRPC
+tonic = { version = "0.12.2", optional = true, default-features = false, features = ["codegen", "prost"] }
+
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 getrandom = { version = "0.2.15", features = ["js"] }
 
 [dev-dependencies]
+tokio = { version = "1.40.0", features = ["rt", "sync", "time", "macros"] }
 color-eyre = "0.6.3"
 anyhow = "1.0.89"
-
-[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
-tokio = { version = "1.40.0", default-features = false, features = ["rt", "sync", "time", "macros"] }
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
 tonic-web-wasm-client = "0.6.0"
