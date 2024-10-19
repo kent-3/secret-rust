@@ -2119,7 +2119,7 @@ dependencies = [
 
 [[package]]
 name = "secretrs"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "aes-siv",
  "anyhow",
