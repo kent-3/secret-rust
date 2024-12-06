@@ -17,12 +17,6 @@ pub mod secret {
         }
     }
 
-    pub mod intertx {
-        pub mod v1beta1 {
-            include!("prost/secret/secret.intertx.v1beta1.rs");
-        }
-    }
-
     pub mod registration {
         pub mod remote_attestation {
             pub mod v1beta1 {

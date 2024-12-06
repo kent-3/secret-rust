@@ -50,7 +50,6 @@ pub use cosmos::upgrade::v1beta1::query_client::QueryClient as UpgradeQueryClien
 
 pub use secret::compute::v1beta1::query_client::QueryClient as ComputeQueryClient;
 pub use secret::emergencybutton::v1beta1::query_client::QueryClient as EmergencyButtonQueryClient;
-pub use secret::intertx::v1beta1::query_client::QueryClient as InterTxQueryClient;
 pub use secret::registration::v1beta1::query_client::QueryClient as RegistrationQueryClient;
 
 // IBC
