@@ -45,9 +45,9 @@ required-features = ["grpc"]
 
 [dependencies]
 # blockchain
-cosmrs = { version = "0.20.0" }
-secret-sdk-proto = { version = "0.1.2", default-features = false, path = "../secret-sdk-proto" }
-ibc-proto = { version = "0.49.0", default-features = false }
+cosmrs = { version = "0.21.0" }
+secret-sdk-proto = { version = "0.1.3", default-features = false, path = "../secret-sdk-proto" }
+ibc-proto = { version = "0.51.0", default-features = false }
 cosmwasm-std = { version = "=1.1.11", package = "secret-cosmwasm-std" }
 bip32 = "0.5.2"
 bip39 = "2.0.0"
