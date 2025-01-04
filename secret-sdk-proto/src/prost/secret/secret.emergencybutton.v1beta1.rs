@@ -137,8 +137,8 @@ pub mod query_client {
             self.inner = self.inner.max_encoding_message_size(limit);
             self
         }
-        /// Params defines a gRPC query method that returns the emergencybutton module's
-        /// parameters.
+        /// Params defines a gRPC query method that returns the emergencybutton
+        /// module's parameters.
         pub async fn params(
             &mut self,
             request: impl tonic::IntoRequest<super::ParamsRequest>,
@@ -179,7 +179,8 @@ impl ::prost::Name for GenesisState {
         "/secret.emergencybutton.v1beta1.GenesisState".into()
     }
 }
-/// MsgToggleIbcSwitch represents a message to toggle the emergencybutton status by the defined pauser.
+/// MsgToggleIbcSwitch represents a message to toggle the emergencybutton status
+/// by the defined pauser.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgToggleIbcSwitch {
@@ -208,6 +209,41 @@ impl ::prost::Name for MsgToggleIbcSwitchResponse {
     }
     fn type_url() -> ::prost::alloc::string::String {
         "/secret.emergencybutton.v1beta1.MsgToggleIbcSwitchResponse".into()
+    }
+}
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct MsgUpdateParams {
+    /// authority is the address of the governance account.
+    #[prost(string, tag = "1")]
+    pub authority: ::prost::alloc::string::String,
+    /// params defines the x/emergencybutton parameters to update.
+    ///
+    /// NOTE: All parameters must be supplied.
+    #[prost(message, optional, tag = "2")]
+    pub params: ::core::option::Option<Params>,
+}
+impl ::prost::Name for MsgUpdateParams {
+    const NAME: &'static str = "MsgUpdateParams";
+    const PACKAGE: &'static str = "secret.emergencybutton.v1beta1";
+    fn full_name() -> ::prost::alloc::string::String {
+        "secret.emergencybutton.v1beta1.MsgUpdateParams".into()
+    }
+    fn type_url() -> ::prost::alloc::string::String {
+        "/secret.emergencybutton.v1beta1.MsgUpdateParams".into()
+    }
+}
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
+pub struct MsgUpdateParamsResponse {}
+impl ::prost::Name for MsgUpdateParamsResponse {
+    const NAME: &'static str = "MsgUpdateParamsResponse";
+    const PACKAGE: &'static str = "secret.emergencybutton.v1beta1";
+    fn full_name() -> ::prost::alloc::string::String {
+        "secret.emergencybutton.v1beta1.MsgUpdateParamsResponse".into()
+    }
+    fn type_url() -> ::prost::alloc::string::String {
+        "/secret.emergencybutton.v1beta1.MsgUpdateParamsResponse".into()
     }
 }
 /// Generated client implementations.
@@ -294,7 +330,8 @@ pub mod msg_client {
             self.inner = self.inner.max_encoding_message_size(limit);
             self
         }
-        /// ToggleIbcSwitch defines a method for toggling the status of the emergencybutton.
+        /// ToggleIbcSwitch defines a method for toggling the status of the
+        /// emergencybutton.
         pub async fn toggle_ibc_switch(
             &mut self,
             request: impl tonic::IntoRequest<super::MsgToggleIbcSwitch>,
@@ -314,6 +351,28 @@ pub mod msg_client {
             req.extensions_mut().insert(GrpcMethod::new(
                 "secret.emergencybutton.v1beta1.Msg",
                 "ToggleIbcSwitch",
+            ));
+            self.inner.unary(req, path, codec).await
+        }
+        pub async fn update_params(
+            &mut self,
+            request: impl tonic::IntoRequest<super::MsgUpdateParams>,
+        ) -> std::result::Result<tonic::Response<super::MsgUpdateParamsResponse>, tonic::Status>
+        {
+            self.inner.ready().await.map_err(|e| {
+                tonic::Status::new(
+                    tonic::Code::Unknown,
+                    format!("Service was not ready: {}", e.into()),
+                )
+            })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/secret.emergencybutton.v1beta1.Msg/UpdateParams",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut().insert(GrpcMethod::new(
+                "secret.emergencybutton.v1beta1.Msg",
+                "UpdateParams",
             ));
             self.inner.unary(req, path, codec).await
         }

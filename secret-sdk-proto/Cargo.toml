@@ -1,6 +1,6 @@
 [package]
 name = "secret-sdk-proto"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Kent"]
 license = "Unlicense"
 repository = "https://github.com/kent-3/secret-rust/tree/main/secret-sdk-proto"
@@ -14,7 +14,7 @@ rust-version = "1.72"
 [dependencies]
 prost = "0.13.1"
 prost-types = "0.13.1"
-cosmos-sdk-proto = { version = "0.25.0", default-features = false }
+cosmos-sdk-proto = { version = "0.26.1", default-features = false }
 
 # Optional dependencies
 tonic = { version = "0.12.3", optional = true, default-features = false, features = ["codegen", "prost"] }
