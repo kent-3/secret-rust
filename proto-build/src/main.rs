@@ -21,7 +21,7 @@ use walkdir::WalkDir;
 static QUIET: AtomicBool = AtomicBool::new(false);
 
 /// The secret network commit or tag to be cloned and used to build the proto files
-const SECRET_NETWORK_REV: &str = "v1.15.0-beta.18";
+const SECRET_NETWORK_REV: &str = "v1.15.1";
 
 const SECRET_REPO: &str = "https://github.com/scrtlabs/SecretNetwork.git";
 
